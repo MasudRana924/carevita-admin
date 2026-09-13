@@ -10,6 +10,10 @@ import Typography from '@mui/material/Typography';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Stack from '@mui/material/Stack';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import { alpha } from '@mui/material/styles';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
@@ -22,6 +26,20 @@ import { useSnackbar } from 'src/components/snackbar';
 export function SettingsView() {
   const { showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(false);
+
+  const [settings, setSettings] = useState({
+    emailNotifications: true,
+    smsNotifications: true,
+    maintenanceMode: false,
+    twoFactorAuth: true,
+    ipWhitelist: true,
+    activityLogging: true,
+    errorReporting: true,
+  });
+
+  const handleToggle = (key: keyof typeof settings) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSettings(prev => ({ ...prev, [key]: event.target.checked }));
+  };
 
   const handleSaveSettings = async () => {
     setLoading(true);
@@ -47,16 +65,86 @@ export function SettingsView() {
       />
 
       <Stack spacing={3}>
-        {/* General Settings */}
+        {/* Notification Settings */}
         <Card>
-          <CardHeader title="General Settings" />
+          <CardHeader 
+            title="Notification Settings" 
+            subheader="Control how you receive notifications"
+          />
+          <CardContent>
+            <Stack spacing={2}>
+              <Paper 
+                variant="outlined" 
+                sx={{ 
+                  p: 2, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  bgcolor: 'background.paper',
+                  '&:hover': {
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                  }
+                }}
+              >
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Email Notifications
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Receive email alerts for important updates
+                  </Typography>
+                </Box>
+                <Switch
+                  checked={settings.emailNotifications}
+                  onChange={handleToggle('emailNotifications')}
+                  color="primary"
+                />
+              </Paper>
+
+              <Paper 
+                variant="outlined" 
+                sx={{ 
+                  p: 2, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  bgcolor: 'background.paper',
+                  '&:hover': {
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                  }
+                }}
+              >
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    SMS Notifications
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Receive SMS alerts for urgent notifications
+                  </Typography>
+                </Box>
+                <Switch
+                  checked={settings.smsNotifications}
+                  onChange={handleToggle('smsNotifications')}
+                  color="primary"
+                />
+              </Paper>
+            </Stack>
+          </CardContent>
+        </Card>
+
+        {/* Application Settings */}
+        <Card>
+          <CardHeader 
+            title="Application Settings" 
+            subheader="Configure application behavior"
+          />
           <CardContent>
             <Stack spacing={3}>
               <TextField
                 fullWidth
                 label="Application Name"
                 defaultValue="CareMate Admin"
-                helperText="The name of your application"
+                helperText="The name displayed in the application"
               />
               
               <TextField
@@ -73,27 +161,45 @@ export function SettingsView() {
                 helperText="Phone number for user support"
               />
 
-              <FormControlLabel
-                control={<Switch defaultChecked />}
-                label="Enable Email Notifications"
-              />
+              <Divider />
 
-              <FormControlLabel
-                control={<Switch defaultChecked />}
-                label="Enable SMS Notifications"
-              />
-
-              <FormControlLabel
-                control={<Switch />}
-                label="Maintenance Mode"
-              />
+              <Paper 
+                variant="outlined" 
+                sx={{ 
+                  p: 2, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  bgcolor: 'background.paper',
+                  '&:hover': {
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                  }
+                }}
+              >
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Maintenance Mode
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Temporarily disable the application for maintenance
+                  </Typography>
+                </Box>
+                <Switch
+                  checked={settings.maintenanceMode}
+                  onChange={handleToggle('maintenanceMode')}
+                  color="warning"
+                />
+              </Paper>
             </Stack>
           </CardContent>
         </Card>
 
         {/* Security Settings */}
         <Card>
-          <CardHeader title="Security Settings" />
+          <CardHeader 
+            title="Security Settings" 
+            subheader="Manage security and access controls"
+          />
           <CardContent>
             <Stack spacing={3}>
               <TextField
@@ -101,18 +207,66 @@ export function SettingsView() {
                 label="Session Timeout (minutes)"
                 type="number"
                 defaultValue={30}
-                helperText="Auto-logout after inactivity"
+                helperText="Auto-logout after period of inactivity"
               />
 
-              <FormControlLabel
-                control={<Switch defaultChecked />}
-                label="Require Two-Factor Authentication"
-              />
+              <Divider />
 
-              <FormControlLabel
-                control={<Switch defaultChecked />}
-                label="Enable IP Whitelist"
-              />
+              <Paper 
+                variant="outlined" 
+                sx={{ 
+                  p: 2, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  bgcolor: 'background.paper',
+                  '&:hover': {
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                  }
+                }}
+              >
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Two-Factor Authentication
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Add an extra layer of security to your account
+                  </Typography>
+                </Box>
+                <Switch
+                  checked={settings.twoFactorAuth}
+                  onChange={handleToggle('twoFactorAuth')}
+                  color="primary"
+                />
+              </Paper>
+
+              <Paper 
+                variant="outlined" 
+                sx={{ 
+                  p: 2, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  bgcolor: 'background.paper',
+                  '&:hover': {
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                  }
+                }}
+              >
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    IP Whitelist
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Restrict access to specific IP addresses only
+                  </Typography>
+                </Box>
+                <Switch
+                  checked={settings.ipWhitelist}
+                  onChange={handleToggle('ipWhitelist')}
+                  color="primary"
+                />
+              </Paper>
 
               <TextField
                 fullWidth
@@ -121,6 +275,7 @@ export function SettingsView() {
                 rows={3}
                 placeholder="Enter IP addresses separated by commas"
                 helperText="Leave empty to allow all IPs"
+                disabled={!settings.ipWhitelist}
               />
             </Stack>
           </CardContent>
@@ -128,39 +283,90 @@ export function SettingsView() {
 
         {/* System Settings */}
         <Card>
-          <CardHeader title="System Settings" />
+          <CardHeader 
+            title="System Settings" 
+            subheader="Configure system preferences"
+          />
           <CardContent>
             <Stack spacing={3}>
               <TextField
                 fullWidth
                 label="Default Timezone"
                 defaultValue="Asia/Dhaka"
-                helperText="System default timezone"
+                helperText="System default timezone for all users"
               />
 
               <TextField
                 fullWidth
                 label="Date Format"
                 defaultValue="DD/MM/YYYY"
-                helperText="Preferred date format"
+                helperText="Preferred date format throughout the application"
               />
 
               <TextField
                 fullWidth
                 label="Time Format"
                 defaultValue="24-hour"
-                helperText="Preferred time format"
+                helperText="Preferred time format (12-hour or 24-hour)"
               />
 
-              <FormControlLabel
-                control={<Switch defaultChecked />}
-                label="Enable Activity Logging"
-              />
+              <Divider />
 
-              <FormControlLabel
-                control={<Switch defaultChecked />}
-                label="Enable Error Reporting"
-              />
+              <Paper 
+                variant="outlined" 
+                sx={{ 
+                  p: 2, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  bgcolor: 'background.paper',
+                  '&:hover': {
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                  }
+                }}
+              >
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Activity Logging
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Track user activities for audit purposes
+                  </Typography>
+                </Box>
+                <Switch
+                  checked={settings.activityLogging}
+                  onChange={handleToggle('activityLogging')}
+                  color="primary"
+                />
+              </Paper>
+
+              <Paper 
+                variant="outlined" 
+                sx={{ 
+                  p: 2, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  bgcolor: 'background.paper',
+                  '&:hover': {
+                    bgcolor: (theme) => alpha(theme.palette.primary.main, 0.04),
+                  }
+                }}
+              >
+                <Box>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Error Reporting
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Automatically report errors for troubleshooting
+                  </Typography>
+                </Box>
+                <Switch
+                  checked={settings.errorReporting}
+                  onChange={handleToggle('errorReporting')}
+                  color="primary"
+                />
+              </Paper>
             </Stack>
           </CardContent>
         </Card>

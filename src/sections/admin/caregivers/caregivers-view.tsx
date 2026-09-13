@@ -31,9 +31,11 @@ export function CaregiversView() {
 
   const [filterName, setFilterName] = useState('');
   const [verificationFilter, setVerificationFilter] = useState('');
+  const [availabilityFilter, setAvailabilityFilter] = useState('');
 
   const { caregivers, loading, error, meta, refetch, blockCaregiver, unblockCaregiver } = useCaregivers({
     verification_status: verificationFilter as any,
+    is_available: availabilityFilter === 'available' ? true : availabilityFilter === 'unavailable' ? false : undefined,
     page: table.page + 1,
     limit: table.rowsPerPage,
   });
@@ -50,6 +52,7 @@ export function CaregiversView() {
   const handleClearFilters = useCallback(() => {
     setFilterName('');
     setVerificationFilter('');
+    setAvailabilityFilter('');
     table.onResetPage();
   }, [table]);
 
@@ -74,7 +77,7 @@ export function CaregiversView() {
   // Refetch when filters change
   useEffect(() => {
     refetch();
-  }, [verificationFilter, table.page, table.rowsPerPage]);
+  }, [verificationFilter, availabilityFilter, table.page, table.rowsPerPage]);
 
   return (
     <DashboardContent>
@@ -91,11 +94,13 @@ export function CaregiversView() {
           numSelected={table.selected.length}
           filterName={filterName}
           verificationFilter={verificationFilter}
+          availabilityFilter={availabilityFilter}
           onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
             setFilterName(event.target.value);
             table.onResetPage();
           }}
           onVerificationFilterChange={setVerificationFilter}
+          onAvailabilityFilterChange={setAvailabilityFilter}
           onClearFilters={handleClearFilters}
         />
 

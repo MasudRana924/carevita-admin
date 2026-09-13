@@ -31,9 +31,11 @@ export function HospitalsView() {
 
   const [filterName, setFilterName] = useState('');
   const [districtFilter, setDistrictFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
 
   const { hospitals, loading, error, meta, refetch, updateHospitalStatus } = useHospitals({
     district: districtFilter || undefined,
+    type: typeFilter || undefined,
     page: table.page + 1,
     limit: table.rowsPerPage,
   });
@@ -50,6 +52,7 @@ export function HospitalsView() {
   const handleClearFilters = useCallback(() => {
     setFilterName('');
     setDistrictFilter('');
+    setTypeFilter('');
     table.onResetPage();
   }, [table]);
 
@@ -65,7 +68,7 @@ export function HospitalsView() {
   // Refetch when filters change
   useEffect(() => {
     refetch();
-  }, [districtFilter, table.page, table.rowsPerPage]);
+  }, [districtFilter, typeFilter, table.page, table.rowsPerPage]);
 
   return (
     <DashboardContent>
@@ -82,11 +85,13 @@ export function HospitalsView() {
           numSelected={table.selected.length}
           filterName={filterName}
           districtFilter={districtFilter}
+          typeFilter={typeFilter}
           onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
             setFilterName(event.target.value);
             table.onResetPage();
           }}
           onDistrictFilterChange={setDistrictFilter}
+          onTypeFilterChange={setTypeFilter}
           onClearFilters={handleClearFilters}
         />
 

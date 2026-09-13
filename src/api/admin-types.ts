@@ -120,6 +120,7 @@ export interface Caregiver {
 
 export interface CaregiversQueryParams {
   verification_status?: 'PENDING' | 'APPROVED' | 'SUSPENDED';
+  is_available?: boolean;
   page?: number;
   limit?: number;
 }
@@ -161,6 +162,7 @@ export interface Hospital {
 
 export interface HospitalsQueryParams {
   district?: string;
+  type?: string;
   page?: number;
   limit?: number;
 }

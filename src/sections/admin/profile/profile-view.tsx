@@ -9,7 +9,6 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Avatar from '@mui/material/Avatar';
 import Stack from '@mui/material/Stack';
-import Divider from '@mui/material/Divider';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
@@ -205,70 +204,6 @@ export function ProfileView() {
                 type="date"
                 InputLabelProps={{ shrink: true }}
               />
-            </Stack>
-          </CardContent>
-        </Card>
-
-        {/* Account Status Card */}
-        <Card>
-          <CardHeader title="Account Status" />
-          <CardContent>
-            <Stack spacing={2}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body1">Account Status</Typography>
-                <Typography 
-                  variant="body1" 
-                  color={profile?.status === 'active' ? 'success.main' : 'error.main'}
-                  fontWeight="bold"
-                >
-                  {profile?.status?.toUpperCase()}
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body1">Role</Typography>
-                <Typography variant="body1" fontWeight="bold">
-                  {profile?.role}
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body1">Email Verified</Typography>
-                <Typography 
-                  variant="body1" 
-                  color={profile?.is_verified ? 'success.main' : 'text.secondary'}
-                  fontWeight="bold"
-                >
-                  {profile?.is_verified ? 'Yes' : 'No'}
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body1">eKYC Status</Typography>
-                <Typography 
-                  variant="body1" 
-                  color={profile?.ekyc_status ? 'success.main' : 'text.secondary'}
-                  fontWeight="bold"
-                >
-                  {profile?.ekyc_status ? 'Verified' : 'Not Verified'}
-                </Typography>
-              </Box>
-
-              <Divider />
-
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2" color="text.secondary">Member Since</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="body2" color="text.secondary">Last Updated</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {profile?.updated_at ? new Date(profile.updated_at).toLocaleDateString() : 'N/A'}
-                </Typography>
-              </Box>
             </Stack>
           </CardContent>
         </Card>

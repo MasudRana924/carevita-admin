@@ -16,12 +16,30 @@ import { LucideIcon } from 'src/components/lucide-icons';
 
 // ----------------------------------------------------------------------
 
+const CONTROL_SX = {
+  height: 56,
+  '& .MuiOutlinedInput-input': {
+    py: 0,
+    height: 56,
+    boxSizing: 'border-box',
+  },
+  '& .MuiSelect-select': {
+    display: 'flex',
+    alignItems: 'center',
+    height: 56,
+    boxSizing: 'border-box',
+    py: 0,
+  },
+};
+
 type HospitalTableToolbarProps = {
   numSelected: number;
   filterName: string;
   districtFilter: string;
+  typeFilter: string;
   onFilterName: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onDistrictFilterChange: (value: string) => void;
+  onTypeFilterChange: (value: string) => void;
   onClearFilters: () => void;
 };
 
@@ -29,11 +47,14 @@ export function HospitalTableToolbar({
   numSelected,
   filterName,
   districtFilter,
+  typeFilter,
   onFilterName,
   onDistrictFilterChange,
+  onTypeFilterChange,
   onClearFilters,
 }: HospitalTableToolbarProps) {
   const router = useRouter();
+  const hasFilters = Boolean(filterName || districtFilter || typeFilter);
 
   const handleNewHospital = () => {
     router.push('/hospitals/new');
@@ -42,10 +63,14 @@ export function HospitalTableToolbar({
   return (
     <Toolbar
       sx={{
-        height: 96,
+        minHeight: { xs: 88, md: 96 },
+        height: 'auto',
         display: 'flex',
+        alignItems: 'center',
         justifyContent: 'space-between',
-        p: (theme) => theme.spacing(0, 1, 0, 3),
+        gap: 2,
+        px: 3,
+        py: 2,
       }}
     >
       {numSelected > 0 ? (
@@ -53,9 +78,16 @@ export function HospitalTableToolbar({
           {numSelected} selected
         </Typography>
       ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
           <OutlinedInput
-            fullWidth
             value={filterName}
             onChange={onFilterName}
             placeholder="Search hospital..."
@@ -64,15 +96,15 @@ export function HospitalTableToolbar({
                 <LucideIcon width={20} icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
               </InputAdornment>
             }
-            sx={{ maxWidth: 320 }}
+            sx={{ flex: 1, minWidth: 180, maxWidth: 320, ...CONTROL_SX }}
           />
-          
-          <FormControl sx={{ minWidth: 150 }}>
+
+          <FormControl sx={{ minWidth: 160, flexShrink: 0 }}>
             <Select
               value={districtFilter}
               onChange={(e) => onDistrictFilterChange(e.target.value)}
               displayEmpty
-              size="small"
+              sx={CONTROL_SX}
             >
               <MenuItem value="">All Districts</MenuItem>
               <MenuItem value="Dhaka">Dhaka</MenuItem>
@@ -83,48 +115,55 @@ export function HospitalTableToolbar({
             </Select>
           </FormControl>
 
-          {(filterName || districtFilter) && (
+          <FormControl sx={{ minWidth: 160, flexShrink: 0 }}>
+            <Select
+              value={typeFilter}
+              onChange={(e) => onTypeFilterChange(e.target.value)}
+              displayEmpty
+              sx={CONTROL_SX}
+            >
+              <MenuItem value="">All Types</MenuItem>
+              <MenuItem value="government">Government</MenuItem>
+              <MenuItem value="private">Private</MenuItem>
+              <MenuItem value="specialized">Specialized</MenuItem>
+            </Select>
+          </FormControl>
+
+          {hasFilters && (
             <Button
               color="error"
               variant="outlined"
               startIcon={<LucideIcon icon="eva:close-fill" />}
               onClick={onClearFilters}
               sx={{
-                borderRadius: 2,
-                px: 4,
-                py: 1.5,
-                minWidth: 160,
+                height: 56,
+                borderRadius: 1,
+                px: 2.5,
+                flexShrink: 0,
                 fontWeight: 600,
-                borderWidth: 2,
                 whiteSpace: 'nowrap',
-                '&:hover': {
-                  borderWidth: 2,
-                  backgroundColor: 'error.main',
-                  color: 'white',
-                },
               }}
             >
               Clear Filters
             </Button>
           )}
-        </div>
+        </Box>
       )}
 
-      <Box sx={{ display: 'flex', gap: 1 }}>
-        {numSelected > 0 && (
+      <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+        {numSelected > 0 ? (
           <Tooltip title="Delete">
             <IconButton sx={{ color: 'error.main' }}>
               <LucideIcon icon="solar:trash-bin-trash-bold" />
             </IconButton>
           </Tooltip>
-        )}
-        
-        {numSelected === 0 && (
+        ) : (
           <Button
             variant="contained"
             color="inherit"
             startIcon={<LucideIcon icon="mingcute:add-line" />}
             onClick={handleNewHospital}
+            sx={{ height: 56, whiteSpace: 'nowrap' }}
           >
             New Hospital
           </Button>

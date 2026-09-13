@@ -3,12 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
+import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { adminDashboardService } from 'src/api/admin-services';
 import { getErrorMessage } from 'src/lib/utils';
-import { CardSkeletonGrid, EmptyState, ErrorState } from 'src/components/page-states';
+import { EmptyState, ErrorState } from 'src/components/page-states';
 import { PageHeader } from 'src/components/page-header';
 import { Chart, useChart } from 'src/components/chart';
 
@@ -40,8 +41,50 @@ const CARD_GRADIENTS = [
   'linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)',
 ];
 
+const KPI_GRID_SX = {
+  display: 'grid',
+  gap: 2,
+  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' },
+  mb: 3,
+} as const;
+
+const KPI_SKELETON_COUNT = 14;
+
+function getKpiCardSx(index: number) {
+  return {
+    p: 2.5,
+    borderRadius: 2,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+    background: CARD_GRADIENTS[index % CARD_GRADIENTS.length],
+    color: 'white',
+  };
+}
+
 function isNumeric(value: unknown) {
   return typeof value === 'number' || (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value)));
+}
+
+function DashboardKpiSkeleton() {
+  return (
+    <Box sx={KPI_GRID_SX}>
+      {Array.from({ length: KPI_SKELETON_COUNT }).map((_, index) => (
+        <Card key={index} sx={getKpiCardSx(index)}>
+          <Skeleton
+            variant="text"
+            width="62%"
+            height={20}
+            sx={{ bgcolor: 'rgba(255,255,255,0.38)' }}
+          />
+          <Skeleton
+            variant="rounded"
+            width="48%"
+            height={36}
+            sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.5)' }}
+          />
+        </Card>
+      ))}
+    </Box>
+  );
 }
 
 export default function DashboardView() {
@@ -83,35 +126,25 @@ export default function DashboardView() {
     ];
   })();
 
+  const isDashboardLoading =
+    dashboardQuery.isLoading || (dashboardQuery.isFetching && !dashboardQuery.data);
+
   return (
     <DashboardContent>
       <PageHeader title="Dashboard" description="CareMate healthcare administration overview" />
 
-      {dashboardQuery.isLoading ? (
-        <CardSkeletonGrid />
+      {isDashboardLoading ? (
+        <DashboardKpiSkeleton />
       ) : dashboardQuery.error ? (
         <ErrorState message={getErrorMessage(dashboardQuery.error)} onRetry={() => dashboardQuery.refetch()} />
       ) : !allKpis.length ? (
         <EmptyState title="No dashboard statistics available" />
       ) : (
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(5, 1fr)' },
-            mb: 3,
-          }}
-        >
+        <Box sx={KPI_GRID_SX}>
           {allKpis.map((item, index) => (
             <Card
               key={item.key}
-              sx={{
-                p: 2.5,
-                borderRadius: 2,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-                background: CARD_GRADIENTS[index % CARD_GRADIENTS.length],
-                color: 'white',
-              }}
+              sx={getKpiCardSx(index)}
             >
               <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
                 {item.label}
@@ -124,15 +157,15 @@ export default function DashboardView() {
         </Box>
       )}
 
-      {bookingsLast7Days.length > 0 && (
+      {!isDashboardLoading && bookingsLast7Days.length > 0 && (
         <BookingsLineCard rows={bookingsLast7Days} />
       )}
 
-      {paymentsLast7Days.length > 0 && (
+      {!isDashboardLoading && paymentsLast7Days.length > 0 && (
         <PaymentsBarCard rows={paymentsLast7Days} />
       )}
 
-      {bookingStatusData.length > 1 && (
+      {!isDashboardLoading && bookingStatusData.length > 1 && (
         <BookingPieCard data={bookingStatusData} />
       )}
     </DashboardContent>
