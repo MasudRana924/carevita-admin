@@ -8,12 +8,15 @@ import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { Breadcrumb } from 'src/components/breadcrumb';
 import { TableNoData } from 'src/components/table-no-data';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useSnackbar } from 'src/components/snackbar';
 import { useCaregivers } from 'src/hooks/useAdminApi';
 
@@ -32,19 +35,21 @@ export function CaregiversView() {
   const [filterName, setFilterName] = useState('');
   const [verificationFilter, setVerificationFilter] = useState('');
   const [availabilityFilter, setAvailabilityFilter] = useState('');
+  const [ekycSessionFilter, setEkycSessionFilter] = useState('');
+  const [confirm, setConfirm] = useState<{ type: 'block' | 'unblock'; id: string } | null>(null);
 
   const { caregivers, loading, error, meta, refetch, blockCaregiver, unblockCaregiver } = useCaregivers({
-    verification_status: verificationFilter as any,
-    is_available: availabilityFilter === 'available' ? true : availabilityFilter === 'unavailable' ? false : undefined,
+    verification_status: (verificationFilter || undefined) as any,
+    ekyc_session_status: ekycSessionFilter || undefined,
     page: table.page + 1,
     limit: table.rowsPerPage,
   });
 
-  // Filter caregivers based on search name
-  const dataFiltered: CaregiverTableRowProps[] = caregivers.filter((caregiver) =>
-    caregiver.name.toLowerCase().includes(filterName.toLowerCase()) ||
-    caregiver.email.toLowerCase().includes(filterName.toLowerCase()) ||
-    caregiver.phone.includes(filterName)
+  const dataFiltered: CaregiverTableRowProps[] = caregivers.filter(
+    (caregiver) =>
+      caregiver.name.toLowerCase().includes(filterName.toLowerCase()) ||
+      caregiver.email.toLowerCase().includes(filterName.toLowerCase()) ||
+      caregiver.phone.includes(filterName)
   );
 
   const notFound = !dataFiltered.length && !!filterName;
@@ -53,40 +58,54 @@ export function CaregiversView() {
     setFilterName('');
     setVerificationFilter('');
     setAvailabilityFilter('');
+    setEkycSessionFilter('');
     table.onResetPage();
   }, [table]);
 
-  const handleBlockCaregiver = useCallback(async (id: string) => {
-    try {
-      await blockCaregiver(id);
-      showSnackbar('Caregiver blocked successfully', 'success');
-    } catch (error: any) {
-      showSnackbar(error.message || 'Failed to block caregiver', 'error');
-    }
-  }, [blockCaregiver, showSnackbar]);
+  const handleEkycSessionFilterChange = useCallback(
+    (value: string) => {
+      setEkycSessionFilter(value);
+      table.onResetPage();
+    },
+    [table]
+  );
 
-  const handleUnblockCaregiver = useCallback(async (id: string) => {
-    try {
-      await unblockCaregiver(id);
-      showSnackbar('Caregiver unblocked successfully', 'success');
-    } catch (error: any) {
-      showSnackbar(error.message || 'Failed to unblock caregiver', 'error');
-    }
-  }, [unblockCaregiver, showSnackbar]);
+  const handleBlockCaregiver = useCallback((id: string) => {
+    setConfirm({ type: 'block', id });
+  }, []);
 
-  // Refetch when filters change
+  const handleUnblockCaregiver = useCallback((id: string) => {
+    setConfirm({ type: 'unblock', id });
+  }, []);
+
+  const handleConfirm = useCallback(async () => {
+    if (!confirm) return;
+    try {
+      if (confirm.type === 'block') {
+        await blockCaregiver(confirm.id);
+        showSnackbar('Caregiver blocked successfully', 'success');
+      } else {
+        await unblockCaregiver(confirm.id);
+        showSnackbar('Caregiver unblocked successfully', 'success');
+      }
+      setConfirm(null);
+    } catch (err: any) {
+      showSnackbar(err.message || 'Failed to update caregiver', 'error');
+    }
+  }, [confirm, blockCaregiver, unblockCaregiver, showSnackbar]);
+
   useEffect(() => {
     refetch();
-  }, [verificationFilter, availabilityFilter, table.page, table.rowsPerPage]);
+  }, [verificationFilter, availabilityFilter, ekycSessionFilter, table.page, table.rowsPerPage]);
 
   return (
     <DashboardContent>
-      <Breadcrumb 
-        title="Caregivers" 
+      <Breadcrumb
+        title="Caregivers"
         items={[
           { title: 'Dashboard', href: '/dashboard' },
-          { title: 'Caregivers' }
-        ]} 
+          { title: 'Caregivers' },
+        ]}
       />
 
       <Card>
@@ -95,18 +114,26 @@ export function CaregiversView() {
           filterName={filterName}
           verificationFilter={verificationFilter}
           availabilityFilter={availabilityFilter}
+          ekycSessionFilter={ekycSessionFilter}
           onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
             setFilterName(event.target.value);
             table.onResetPage();
           }}
-          onVerificationFilterChange={setVerificationFilter}
-          onAvailabilityFilterChange={setAvailabilityFilter}
+          onVerificationFilterChange={(value) => {
+            setVerificationFilter(value);
+            table.onResetPage();
+          }}
+          onAvailabilityFilterChange={(value) => {
+            setAvailabilityFilter(value);
+            table.onResetPage();
+          }}
+          onEkycSessionFilterChange={handleEkycSessionFilterChange}
           onClearFilters={handleClearFilters}
         />
 
         <Scrollbar>
           <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 800 }}>
+            <Table sx={{ minWidth: 960 }}>
               <CaregiverTableHead
                 order={table.order}
                 orderBy={table.orderBy}
@@ -126,6 +153,7 @@ export function CaregiversView() {
                   { id: 'experience', label: 'Experience' },
                   { id: 'hourly_rate', label: 'Hourly Rate' },
                   { id: 'verification_status', label: 'Verification' },
+                  { id: 'ekyc_session_status', label: 'eKYC' },
                   { id: 'is_available', label: 'Availability' },
                   { id: 'rating', label: 'Rating' },
                   { id: 'completed_bookings', label: 'Bookings' },
@@ -136,31 +164,34 @@ export function CaregiversView() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={11} align="center">
+                    <TableCell colSpan={13} align="center">
                       <Box sx={{ py: 3 }}>Loading...</Box>
                     </TableCell>
                   </TableRow>
                 ) : error ? (
                   <TableRow>
-                    <TableCell colSpan={11} align="center">
+                    <TableCell colSpan={13} align="center">
                       <Box sx={{ py: 3, color: 'error.main' }}>{error}</Box>
                     </TableCell>
                   </TableRow>
-                ) : dataFiltered
-                  .slice(
-                    table.page * table.rowsPerPage,
-                    table.page * table.rowsPerPage + table.rowsPerPage
-                  )
-                  .map((row) => (
-                    <CaregiverTableRow
-                      key={row.id}
-                      row={row}
-                      selected={table.selected.includes(row.id)}
-                      onSelectRow={() => table.onSelectRow(row.id)}
-                      onBlockCaregiver={handleBlockCaregiver}
-                      onUnblockCaregiver={handleUnblockCaregiver}
-                    />
-                  ))}
+                ) : (
+                  dataFiltered
+                    .filter((row) => {
+                      if (availabilityFilter === 'available') return row.is_available;
+                      if (availabilityFilter === 'unavailable') return !row.is_available;
+                      return true;
+                    })
+                    .map((row) => (
+                      <CaregiverTableRow
+                        key={row.id}
+                        row={row}
+                        selected={table.selected.includes(row.id)}
+                        onSelectRow={() => table.onSelectRow(row.id)}
+                        onBlockCaregiver={handleBlockCaregiver}
+                        onUnblockCaregiver={handleUnblockCaregiver}
+                      />
+                    ))
+                )}
 
                 {notFound && <TableNoData searchQuery={filterName} onClearFilters={handleClearFilters} />}
               </TableBody>
@@ -178,6 +209,28 @@ export function CaregiversView() {
           onRowsPerPageChange={table.onChangeRowsPerPage}
         />
       </Card>
+
+      <ConfirmDialog
+        open={!!confirm}
+        onClose={() => setConfirm(null)}
+        title={confirm?.type === 'block' ? 'Block caregiver' : 'Unblock caregiver'}
+        content={
+          <Typography>
+            {confirm?.type === 'block'
+              ? 'Block this caregiver account?'
+              : 'Unblock this caregiver account?'}
+          </Typography>
+        }
+        action={
+          <Button
+            variant="contained"
+            color={confirm?.type === 'block' ? 'error' : 'success'}
+            onClick={handleConfirm}
+          >
+            {confirm?.type === 'block' ? 'Block' : 'Unblock'}
+          </Button>
+        }
+      />
     </DashboardContent>
   );
 }

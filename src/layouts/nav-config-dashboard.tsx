@@ -1,11 +1,15 @@
 import type { ReactNode } from 'react';
 import {
+  ClipboardList,
   Handshake,
   Hospital,
   LayoutDashboard,
+  Scale,
+  ScrollText,
   Settings,
   UserRound,
   Users,
+  Wallet,
 } from 'lucide-react';
 
 export type NavItem = {
@@ -32,6 +36,15 @@ export const navGroups: NavGroup[] = [
       { title: 'Users', path: '/users', icon: <Users style={iconSx} /> },
       { title: 'Caregivers', path: '/caregivers', icon: <Handshake style={iconSx} /> },
       { title: 'Hospitals', path: '/hospitals', icon: <Hospital style={iconSx} /> },
+      { title: 'Bookings', path: '/bookings', icon: <ClipboardList style={iconSx} /> },
+    ],
+  },
+  {
+    subheader: 'Operations',
+    items: [
+      { title: 'Disputes', path: '/disputes', icon: <Scale style={iconSx} /> },
+      { title: 'Withdrawals', path: '/withdrawals', icon: <Wallet style={iconSx} /> },
+      { title: 'Audit log', path: '/audit-logs', icon: <ScrollText style={iconSx} /> },
     ],
   },
   {

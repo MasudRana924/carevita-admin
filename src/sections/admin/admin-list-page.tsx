@@ -3,6 +3,8 @@ import { useState } from 'react';
 
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import Stack from '@mui/material/Stack';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 import { DashboardContent } from 'src/layouts/dashboard';
@@ -18,7 +20,8 @@ type ConfirmConfig<T> = {
   content: string;
   confirmLabel?: string;
   color?: 'error' | 'primary' | 'warning' | 'success';
-  run: (row: T) => Promise<unknown>;
+  prompt?: { label: string; required?: boolean };
+  run: (row: T, extra?: { note?: string }) => Promise<unknown>;
   successMessage: string;
 };
 
@@ -34,6 +37,7 @@ type Props<T extends Record<string, unknown>> = {
   searchPlaceholder?: string;
   extraToolbar?: React.ReactNode;
   clientSearchKeys?: string[];
+  hideSearch?: boolean;
 };
 
 export function AdminListPage<T extends Record<string, unknown>>({
@@ -48,20 +52,26 @@ export function AdminListPage<T extends Record<string, unknown>>({
   searchPlaceholder,
   extraToolbar,
   clientSearchKeys,
+  hideSearch,
 }: Props<T>) {
   const list = useResourceList<T>(queryKey, fetcher);
   const { showSnackbar } = useSnackbar();
   const queryClient = useQueryClient();
   const [confirm, setConfirm] = useState<{ row: T; config: ConfirmConfig<T> } | null>(null);
+  const [note, setNote] = useState('');
 
   const mutation = useMutation({
     mutationFn: async () => {
       if (!confirm) return;
-      await confirm.config.run(confirm.row);
+      if (confirm.config.prompt?.required && !note.trim()) {
+        throw new Error(`${confirm.config.prompt.label} is required`);
+      }
+      await confirm.config.run(confirm.row, { note: note.trim() || undefined });
     },
     onSuccess: () => {
       if (confirm) showSnackbar(confirm.config.successMessage, 'success');
       setConfirm(null);
+      setNote('');
       queryClient.invalidateQueries({ queryKey: [queryKey] });
     },
     onError: (error) => {
@@ -72,7 +82,10 @@ export function AdminListPage<T extends Record<string, unknown>>({
   const resolvedActions = actions.map((action) =>
     typeof action === 'function'
       ? action({
-          confirm: (row, config) => setConfirm({ row, config }),
+          confirm: (row, config) => {
+            setNote('');
+            setConfirm({ row, config });
+          },
         })
       : action
   );
@@ -86,8 +99,8 @@ export function AdminListPage<T extends Record<string, unknown>>({
         loading={list.isLoading}
         error={list.errorMessage}
         onRetry={() => list.refetch()}
-        searchValue={list.search}
-        onSearchChange={list.setSearch}
+        searchValue={hideSearch ? undefined : list.search}
+        onSearchChange={hideSearch ? undefined : list.setSearch}
         searchPlaceholder={searchPlaceholder}
         filters={filters}
         filterValues={list.filters}
@@ -97,6 +110,7 @@ export function AdminListPage<T extends Record<string, unknown>>({
         onPageChange={list.setPage}
         onRowsPerPageChange={list.setRowsPerPage}
         serverMode
+        totalCount={list.totalCount}
         hasNextPage={list.hasNextPage}
         getRowId={(row) => getRecordId(row)}
         actions={resolvedActions}
@@ -108,7 +122,21 @@ export function AdminListPage<T extends Record<string, unknown>>({
         open={!!confirm}
         onClose={() => !mutation.isPending && setConfirm(null)}
         title={confirm?.config.title}
-        content={<Typography>{confirm?.config.content}</Typography>}
+        content={
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            <Typography>{confirm?.config.content}</Typography>
+            {confirm?.config.prompt && (
+              <TextField
+                fullWidth
+                multiline
+                minRows={2}
+                label={confirm.config.prompt.label}
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+              />
+            )}
+          </Stack>
+        }
         action={
           <Button
             variant="contained"

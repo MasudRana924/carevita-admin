@@ -8,12 +8,15 @@ import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { Breadcrumb } from 'src/components/breadcrumb';
 import { TableNoData } from 'src/components/table-no-data';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useSnackbar } from 'src/components/snackbar';
 import { useUsers } from 'src/hooks/useAdminApi';
 
@@ -32,6 +35,8 @@ export function UsersView() {
   const [filterName, setFilterName] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+
+  const [confirm, setConfirm] = useState<{ type: 'block' | 'unblock'; id: string } | null>(null);
 
   const { users, loading, error, meta, refetch, blockUser, unblockUser } = useUsers({
     role: roleFilter as any,
@@ -56,23 +61,29 @@ export function UsersView() {
     table.onResetPage();
   }, [table]);
 
-  const handleBlockUser = useCallback(async (id: string) => {
-    try {
-      await blockUser(id);
-      showSnackbar('User blocked successfully', 'success');
-    } catch (error: any) {
-      showSnackbar(error.message || 'Failed to block user', 'error');
-    }
-  }, [blockUser, showSnackbar]);
+  const handleBlockUser = useCallback((id: string) => {
+    setConfirm({ type: 'block', id });
+  }, []);
 
-  const handleUnblockUser = useCallback(async (id: string) => {
+  const handleUnblockUser = useCallback((id: string) => {
+    setConfirm({ type: 'unblock', id });
+  }, []);
+
+  const handleConfirm = useCallback(async () => {
+    if (!confirm) return;
     try {
-      await unblockUser(id);
-      showSnackbar('User unblocked successfully', 'success');
-    } catch (error: any) {
-      showSnackbar(error.message || 'Failed to unblock user', 'error');
+      if (confirm.type === 'block') {
+        await blockUser(confirm.id);
+        showSnackbar('User blocked successfully', 'success');
+      } else {
+        await unblockUser(confirm.id);
+        showSnackbar('User unblocked successfully', 'success');
+      }
+      setConfirm(null);
+    } catch (err: any) {
+      showSnackbar(err.message || 'Failed to update user', 'error');
     }
-  }, [unblockUser, showSnackbar]);
+  }, [confirm, blockUser, unblockUser, showSnackbar]);
 
   // Refetch when filters change
   useEffect(() => {
@@ -142,12 +153,7 @@ export function UsersView() {
                       <Box sx={{ py: 3, color: 'error.main' }}>{error}</Box>
                     </TableCell>
                   </TableRow>
-                ) : dataFiltered
-                  .slice(
-                    table.page * table.rowsPerPage,
-                    table.page * table.rowsPerPage + table.rowsPerPage
-                  )
-                  .map((row) => (
+                ) : dataFiltered.map((row) => (
                     <UserTableRow
                       key={row.id}
                       row={row}
@@ -174,6 +180,28 @@ export function UsersView() {
           onRowsPerPageChange={table.onChangeRowsPerPage}
         />
       </Card>
+
+      <ConfirmDialog
+        open={!!confirm}
+        onClose={() => setConfirm(null)}
+        title={confirm?.type === 'block' ? 'Block user' : 'Unblock user'}
+        content={
+          <Typography>
+            {confirm?.type === 'block'
+              ? 'Block this user account?'
+              : 'Unblock this user account?'}
+          </Typography>
+        }
+        action={
+          <Button
+            variant="contained"
+            color={confirm?.type === 'block' ? 'error' : 'success'}
+            onClick={handleConfirm}
+          >
+            {confirm?.type === 'block' ? 'Block' : 'Unblock'}
+          </Button>
+        }
+      />
     </DashboardContent>
   );
 }

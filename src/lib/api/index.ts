@@ -2,34 +2,20 @@ import { apiGet, apiList, apiSend } from './http';
 
 export const usersApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/users', params),
-  update: (id: string, body: Record<string, unknown>) => apiSend('put', `/admin/users/${id}`, body),
   updateStatus: (id: string, status: string) => apiSend('put', `/admin/users/${id}/status`, { status }),
-  remove: (id: string) => apiSend('delete', `/admin/users/${id}`),
-};
-
-export const providersApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/providers', params),
-  verify: (id: string, body: Record<string, unknown>) => apiSend('put', `/admin/providers/${id}/verify`, body),
-};
-
-export const nursesApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/nurses', params),
-  get: (id: string) => apiGet(`/nurse/${id}`),
-  search: (params?: Record<string, string | number | boolean | undefined>) => apiList('/nurse/search', params),
+  block: (id: string) => apiSend('put', `/admin/users/${id}/block`),
+  unblock: (id: string) => apiSend('put', `/admin/users/${id}/unblock`),
 };
 
 export const caregiversApi = {
-  search: (params?: Record<string, string | number | boolean | undefined>) => apiList('/caregiver/search', params),
-  get: (id: string) => apiGet(`/caregiver/${id}`),
-};
-
-export const doctorsApi = {
-  search: (params?: Record<string, string | number | boolean | undefined>) => apiList('/doctor/search', params),
-  get: (id: string) => apiGet(`/doctor/${id}`),
-  appointments: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiList('/doctor/appointments', params),
-  updateAppointmentStatus: (id: string, body: Record<string, unknown>) =>
-    apiSend('put', `/doctor/appointments/${id}/status`, body),
+  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/caregivers', params),
+  block: (id: string) => apiSend('put', `/admin/caregivers/${id}/block`),
+  unblock: (id: string) => apiSend('put', `/admin/caregivers/${id}/unblock`),
+  getEkyc: (id: string) => apiGet(`/admin/caregivers/${id}/ekyc`),
+  approveEkyc: (id: string, body?: { comment?: string }) =>
+    apiSend('post', `/admin/caregivers/${id}/ekyc/approve`, body?.comment ? { comment: body.comment } : {}),
+  declineEkyc: (id: string, body?: { comment?: string }) =>
+    apiSend('post', `/admin/caregivers/${id}/ekyc/decline`, body?.comment ? { comment: body.comment } : {}),
 };
 
 export const dashboardApi = {
@@ -38,47 +24,16 @@ export const dashboardApi = {
 
 export const bookingsApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/bookings', params),
-  get: (id: string) => apiGet(`/bookings/${id}`),
-};
-
-export const documentsApi = {
-  pending: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiList('/admin/documents/pending', params),
-  verify: (id: string, body: Record<string, unknown>) => apiSend('put', `/admin/documents/${id}/verify`, body),
-};
-
-export const paymentsApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/payments', params),
-  get: (id: string) => apiGet(`/payments/${id}`),
-  refund: (id: string, body: Record<string, unknown>) => apiSend('post', `/payments/${id}/refund`, body),
-  verify: (body: Record<string, unknown>) => apiSend('post', '/payments/verify', body),
-};
-
-export const revenueApi = {
-  get: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiGet('/admin/revenue', params),
+  get: (id: string) => apiGet(`/admin/bookings/${id}`),
+  cancel: (id: string, reason: string) => apiSend('post', `/admin/bookings/${id}/cancel`, { reason }),
 };
 
 export const hospitalsApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/hospitals', params),
-  get: (id: string) => apiGet(`/services/hospitals/${id}`),
   create: (formData: FormData) => apiSend('post', '/admin/hospitals', formData),
+  update: (id: string, formData: FormData) => apiSend('put', `/admin/hospitals/${id}`, formData),
   updateStatus: (id: string, is_active: boolean) =>
     apiSend('put', `/admin/hospitals/${id}/status`, { is_active }),
-};
-
-export const medicinesApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/medicines', params),
-  create: (body: Record<string, unknown>) => apiSend('post', '/admin/medicines', body),
-  update: (id: string, body: Record<string, unknown>) => apiSend('put', `/admin/medicines/${id}`, body),
-  remove: (id: string) => apiSend('delete', `/admin/medicines/${id}`),
-};
-
-export const ordersApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/orders', params),
-  get: (id: string) => apiGet(`/admin/orders/${id}`),
-  updateStatus: (id: string, body: Record<string, unknown>) =>
-    apiSend('put', `/admin/orders/${id}/status`, body),
 };
 
 export const disputesApi = {
@@ -87,93 +42,18 @@ export const disputesApi = {
 };
 
 export const withdrawalsApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiList('/caregiver/admin/withdrawals', params),
-  get: (id: string) => apiGet(`/caregiver/withdrawals/${id}`),
+  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/withdrawals', params),
   approve: (id: string, body?: Record<string, unknown>) =>
-    apiSend('patch', `/caregiver/admin/withdrawals/${id}/approve`, body),
-  reject: (id: string, body: Record<string, unknown>) =>
-    apiSend('patch', `/caregiver/admin/withdrawals/${id}/reject`, body),
-  complete: (id: string, body?: Record<string, unknown>) =>
-    apiSend('patch', `/caregiver/admin/withdrawals/${id}/complete`, body),
+    apiSend('post', `/admin/withdrawals/${id}/approve`, body || {}),
+  reject: (id: string, body?: Record<string, unknown>) =>
+    apiSend('post', `/admin/withdrawals/${id}/reject`, body || {}),
 };
 
-export const supportApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/support', params),
-  get: (id: string) => apiGet(`/support/${id}`),
-  update: (id: string, body: Record<string, unknown>) => apiSend('put', `/support/${id}`, body),
+export const auditLogsApi = {
+  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/audit-logs', params),
 };
 
-export const reviewsApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/reviews', params),
-  provider: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiGet('/reviews/provider', params),
-};
-
-export const notificationsApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/notifications', params),
-  markRead: (id: string) => apiSend('put', `/notifications/${id}/read`),
-  markAllRead: () => apiSend('put', '/notifications/read-all'),
-  remove: (id: string) => apiSend('delete', `/notifications/${id}`),
-};
-
-export const ambulanceApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/ambulance', params),
-  get: (id: string) => apiGet(`/ambulance/${id}`),
-  cancel: (id: string) => apiSend('delete', `/ambulance/${id}`),
-};
-
-export const diagnosticsApi = {
-  centers: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiList('/diagnostic/centers', params),
-  bookings: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiList('/diagnostic/bookings', params),
-  getBooking: (id: string) => apiGet(`/diagnostic/bookings/${id}`),
-  cancelBooking: (id: string) => apiSend('delete', `/diagnostic/bookings/${id}`),
-};
-
-export const emergencyApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/emergency', params),
-  get: (id: string) => apiGet(`/emergency/${id}`),
-  update: (id: string, body: Record<string, unknown>) => apiSend('put', `/emergency/${id}`, body),
-  resolve: (id: string, body?: Record<string, unknown>) => apiSend('put', `/emergency/${id}/resolve`, body),
-};
-
-export const helpingHandsApi = {
-  search: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiList('/helping-hand/search', params),
-  get: (id: string) => apiGet(`/helping-hand/${id}`),
-  bookings: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiList('/helping-hand/bookings', params),
-  timeline: (id: string) => apiGet(`/helping-hand/bookings/${id}/timeline`),
-};
-
-export const familyApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/family', params),
-  get: (id: string) => apiGet(`/family/${id}`),
-};
-
-export const medicalRecordsApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiList('/medical-records', params),
-  get: (id: string) => apiGet(`/medical-records/${id}`),
-};
-
-export const medicationsApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/medications', params),
-  get: (id: string) => apiGet(`/medications/${id}`),
-};
-
-export const appointmentsApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/appointments', params),
-  get: (id: string) => apiGet(`/appointments/${id}`),
-};
-
-export const ekycApi = {
-  status: () => apiGet('/ekyc/status'),
-};
-
-export const walletApi = {
-  transactions: (params?: Record<string, string | number | boolean | undefined>) =>
-    apiList('/wallet/transactions', params),
+export const bkashApi = {
+  refund: (body: Record<string, unknown>) => apiSend('post', '/payments/bkash/refund', body),
+  refundStatus: (body: Record<string, unknown>) => apiSend('post', '/payments/bkash/refund/status', body),
 };

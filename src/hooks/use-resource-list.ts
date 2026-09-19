@@ -6,6 +6,14 @@ import { getErrorMessage } from 'src/lib/utils';
 type ListResult<T> = {
   items: T[];
   meta?: Record<string, unknown>;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
 };
 
 export function useDebouncedValue<T>(value: T, delay = 400) {
@@ -46,7 +54,9 @@ export function useResourceList<T>(
   };
 
   const items = query.data?.items || [];
-  const hasNextPage = items.length >= rowsPerPage;
+  const pagination = query.data?.pagination;
+  const total = Number(pagination?.total) || 0;
+  const hasNextPage = pagination?.hasNext ?? items.length >= rowsPerPage;
 
   return {
     ...query,
@@ -63,6 +73,7 @@ export function useResourceList<T>(
     filters,
     setFilter,
     hasNextPage,
+    totalCount: total,
     errorMessage: query.error ? getErrorMessage(query.error) : null,
   };
 }

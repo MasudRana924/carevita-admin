@@ -1,4 +1,5 @@
 import apiClient from '../lib/api/client';
+import { asList, getPagination, unwrapData as unwrapEnvelope } from 'src/lib/utils';
 import type {
   AdminProfile,
   DashboardData,
@@ -10,6 +11,8 @@ import type {
   CaregiversQueryParams,
   CaregiversResponse,
   CaregiverBlockResponse,
+  CaregiverEkycDetail,
+  CaregiverEkycActionPayload,
   Hospital,
   HospitalsQueryParams,
   HospitalCreateData,
@@ -17,17 +20,47 @@ import type {
   HospitalStatusUpdate,
   HospitalsResponse,
   AdminApiResponse,
+  Booking,
+  BookingsQueryParams,
+  BookingsResponse,
+  BookingCancelResponse,
+  Dispute,
+  DisputesQueryParams,
+  DisputesResponse,
+  DisputeStatus,
+  Withdrawal,
+  WithdrawalsQueryParams,
+  WithdrawalsResponse,
+  BkashRefundPayload,
+  BkashRefundStatusPayload,
+  AuditLog,
+  AuditLogsQueryParams,
+  AuditLogsResponse,
 } from './admin-types';
 
-// Admin API base path
 const ADMIN_BASE = '/admin';
 
-// Helper function to unwrap API response
-function unwrapData<T>(response: any): T {
-  return response.data || response;
+function unwrapData<T>(response: unknown): T {
+  return unwrapEnvelope<T>(response).data;
 }
 
-// Profile API
+function listResponse<T>(response: AdminApiResponse<T[]> | unknown): { data: T[]; meta: ReturnType<typeof getPagination> } {
+  const envelope = unwrapEnvelope<T[] | Record<string, unknown>>(response);
+  return {
+    data: asList<T>(envelope.data),
+    meta: getPagination(envelope.meta),
+  };
+}
+
+function appendIfPresent(formData: FormData, key: string, value?: string | File | boolean | number | null) {
+  if (value === undefined || value === null || value === '') return;
+  if (value instanceof File) {
+    formData.append(key, value);
+    return;
+  }
+  formData.append(key, String(value));
+}
+
 export const adminProfileService = {
   getProfile: async (): Promise<AdminProfile> => {
     const response = await apiClient.get<AdminApiResponse<AdminProfile>>(`${ADMIN_BASE}/profile`);
@@ -35,7 +68,6 @@ export const adminProfileService = {
   },
 };
 
-// Dashboard API
 export const adminDashboardService = {
   getDashboard: async (): Promise<DashboardData> => {
     const response = await apiClient.get<AdminApiResponse<DashboardData>>(`${ADMIN_BASE}/dashboard`);
@@ -43,15 +75,10 @@ export const adminDashboardService = {
   },
 };
 
-// Users API
 export const adminUsersService = {
   getUsers: async (params?: UsersQueryParams): Promise<UsersResponse> => {
     const response = await apiClient.get<AdminApiResponse<User[]>>(`${ADMIN_BASE}/users`, { params });
-    const meta = response.data.meta as { page: number; limit: number; total: number } | undefined;
-    return {
-      data: unwrapData<User[]>(response.data),
-      meta: meta || { page: 1, limit: 20, total: 0 },
-    };
+    return listResponse<User>(response.data);
   },
 
   blockUser: async (id: string): Promise<User> => {
@@ -70,15 +97,10 @@ export const adminUsersService = {
   },
 };
 
-// Caregivers API
 export const adminCaregiversService = {
   getCaregivers: async (params?: CaregiversQueryParams): Promise<CaregiversResponse> => {
     const response = await apiClient.get<AdminApiResponse<Caregiver[]>>(`${ADMIN_BASE}/caregivers`, { params });
-    const meta = response.data.meta as { page: number; limit: number; total: number } | undefined;
-    return {
-      data: unwrapData<Caregiver[]>(response.data),
-      meta: meta || { page: 1, limit: 20, total: 0 },
-    };
+    return listResponse<Caregiver>(response.data);
   },
 
   blockCaregiver: async (id: string): Promise<CaregiverBlockResponse> => {
@@ -90,33 +112,54 @@ export const adminCaregiversService = {
     const response = await apiClient.put<AdminApiResponse<CaregiverBlockResponse>>(`${ADMIN_BASE}/caregivers/${id}/unblock`);
     return unwrapData<CaregiverBlockResponse>(response.data);
   },
+
+  getEkyc: async (id: string): Promise<CaregiverEkycDetail> => {
+    const response = await apiClient.get<AdminApiResponse<CaregiverEkycDetail>>(`${ADMIN_BASE}/caregivers/${id}/ekyc`);
+    return unwrapData<CaregiverEkycDetail>(response.data);
+  },
+
+  approveEkyc: async (
+    id: string,
+    body?: CaregiverEkycActionPayload
+  ): Promise<{ data: CaregiverEkycDetail; message?: string }> => {
+    const response = await apiClient.post<AdminApiResponse<CaregiverEkycDetail>>(
+      `${ADMIN_BASE}/caregivers/${id}/ekyc/approve`,
+      body?.comment ? { comment: body.comment } : {}
+    );
+    const envelope = unwrapEnvelope<CaregiverEkycDetail>(response.data);
+    return { data: envelope.data, message: envelope.message };
+  },
+
+  declineEkyc: async (
+    id: string,
+    body?: CaregiverEkycActionPayload
+  ): Promise<{ data: CaregiverEkycDetail; message?: string }> => {
+    const response = await apiClient.post<AdminApiResponse<CaregiverEkycDetail>>(
+      `${ADMIN_BASE}/caregivers/${id}/ekyc/decline`,
+      body?.comment ? { comment: body.comment } : {}
+    );
+    const envelope = unwrapEnvelope<CaregiverEkycDetail>(response.data);
+    return { data: envelope.data, message: envelope.message };
+  },
 };
 
-// Hospitals API
 export const adminHospitalsService = {
   getHospitals: async (params?: HospitalsQueryParams): Promise<HospitalsResponse> => {
     const response = await apiClient.get<AdminApiResponse<Hospital[]>>(`${ADMIN_BASE}/hospitals`, { params });
-    const meta = response.data.meta as { page: number; limit: number; total: number } | undefined;
-    return {
-      data: unwrapData<Hospital[]>(response.data),
-      meta: meta || { page: 1, limit: 20, total: 0 },
-    };
+    return listResponse<Hospital>(response.data);
   },
 
   createHospital: async (data: HospitalCreateData): Promise<Hospital> => {
     const formData = new FormData();
     formData.append('name', data.name);
-    
-    if (data.address) formData.append('address', data.address);
-    if (data.phone) formData.append('phone', data.phone);
-    if (data.email) formData.append('email', data.email);
-    if (data.location_lat !== undefined) formData.append('location_lat', data.location_lat.toString());
-    if (data.location_long !== undefined) formData.append('location_long', data.location_long.toString());
-    if (data.city) formData.append('city', data.city);
-    if (data.district) formData.append('district', data.district);
-    if (data.type) formData.append('type', data.type);
-    if (data.details) formData.append('details', data.details);
-    if (data.photo) formData.append('photo', data.photo);
+    appendIfPresent(formData, 'address', data.address);
+    appendIfPresent(formData, 'phone', data.phone);
+    appendIfPresent(formData, 'email', data.email);
+    appendIfPresent(formData, 'city', data.city);
+    appendIfPresent(formData, 'district', data.district);
+    appendIfPresent(formData, 'type', data.type);
+    appendIfPresent(formData, 'details', data.details);
+    appendIfPresent(formData, 'photo', data.photo);
 
     const response = await apiClient.post<AdminApiResponse<Hospital>>(`${ADMIN_BASE}/hospitals`, formData);
     return unwrapData<Hospital>(response.data);
@@ -124,19 +167,16 @@ export const adminHospitalsService = {
 
   updateHospital: async (id: string, data: HospitalUpdateData): Promise<Hospital> => {
     const formData = new FormData();
-    
-    if (data.name) formData.append('name', data.name);
-    if (data.address) formData.append('address', data.address);
-    if (data.phone) formData.append('phone', data.phone);
-    if (data.email) formData.append('email', data.email);
-    if (data.location_lat !== undefined) formData.append('location_lat', data.location_lat.toString());
-    if (data.location_long !== undefined) formData.append('location_long', data.location_long.toString());
-    if (data.city) formData.append('city', data.city);
-    if (data.district) formData.append('district', data.district);
-    if (data.type) formData.append('type', data.type);
-    if (data.details) formData.append('details', data.details);
-    if (data.is_active !== undefined) formData.append('is_active', data.is_active.toString());
-    if (data.photo) formData.append('photo', data.photo);
+    appendIfPresent(formData, 'name', data.name);
+    appendIfPresent(formData, 'address', data.address);
+    appendIfPresent(formData, 'phone', data.phone);
+    appendIfPresent(formData, 'email', data.email);
+    appendIfPresent(formData, 'city', data.city);
+    appendIfPresent(formData, 'district', data.district);
+    appendIfPresent(formData, 'type', data.type);
+    appendIfPresent(formData, 'details', data.details);
+    appendIfPresent(formData, 'is_active', data.is_active);
+    appendIfPresent(formData, 'photo', data.photo);
 
     const response = await apiClient.put<AdminApiResponse<Hospital>>(`${ADMIN_BASE}/hospitals/${id}`, formData);
     return unwrapData<Hospital>(response.data);
@@ -145,5 +185,79 @@ export const adminHospitalsService = {
   updateHospitalStatus: async (id: string, data: HospitalStatusUpdate): Promise<Hospital> => {
     const response = await apiClient.put<AdminApiResponse<Hospital>>(`${ADMIN_BASE}/hospitals/${id}/status`, data);
     return unwrapData<Hospital>(response.data);
+  },
+};
+
+export const adminBookingsService = {
+  getBookings: async (params?: BookingsQueryParams): Promise<BookingsResponse> => {
+    const response = await apiClient.get<AdminApiResponse<Booking[]>>(`${ADMIN_BASE}/bookings`, { params });
+    return listResponse<Booking>(response.data);
+  },
+
+  getBooking: async (id: string): Promise<Booking> => {
+    const response = await apiClient.get<AdminApiResponse<Booking>>(`${ADMIN_BASE}/bookings/${id}`);
+    return unwrapData<Booking>(response.data);
+  },
+
+  cancelBooking: async (id: string, reason: string): Promise<BookingCancelResponse> => {
+    const response = await apiClient.post<AdminApiResponse<BookingCancelResponse>>(
+      `${ADMIN_BASE}/bookings/${id}/cancel`,
+      { reason }
+    );
+    return unwrapData<BookingCancelResponse>(response.data);
+  },
+};
+
+export const adminDisputesService = {
+  getDisputes: async (params?: DisputesQueryParams): Promise<DisputesResponse> => {
+    const response = await apiClient.get<AdminApiResponse<Dispute[]>>(`${ADMIN_BASE}/disputes`, { params });
+    return listResponse<Dispute>(response.data);
+  },
+
+  updateDispute: async (id: string, body: { status: DisputeStatus; resolution?: string }): Promise<Dispute> => {
+    const response = await apiClient.patch<AdminApiResponse<Dispute>>(`${ADMIN_BASE}/disputes/${id}`, body);
+    return unwrapData<Dispute>(response.data);
+  },
+};
+
+export const adminWithdrawalsService = {
+  getWithdrawals: async (params?: WithdrawalsQueryParams): Promise<WithdrawalsResponse> => {
+    const response = await apiClient.get<AdminApiResponse<Withdrawal[]>>(`${ADMIN_BASE}/withdrawals`, { params });
+    return listResponse<Withdrawal>(response.data);
+  },
+
+  approveWithdrawal: async (id: string, note?: string): Promise<Withdrawal> => {
+    const response = await apiClient.post<AdminApiResponse<Withdrawal>>(
+      `${ADMIN_BASE}/withdrawals/${id}/approve`,
+      note ? { note } : {}
+    );
+    return unwrapData<Withdrawal>(response.data);
+  },
+
+  rejectWithdrawal: async (id: string, note?: string): Promise<Withdrawal> => {
+    const response = await apiClient.post<AdminApiResponse<Withdrawal>>(
+      `${ADMIN_BASE}/withdrawals/${id}/reject`,
+      note ? { note } : {}
+    );
+    return unwrapData<Withdrawal>(response.data);
+  },
+};
+
+export const bkashRefundService = {
+  refund: async (payload: BkashRefundPayload) => {
+    const response = await apiClient.post('/payments/bkash/refund', payload);
+    return unwrapData<Record<string, unknown>>(response.data);
+  },
+
+  status: async (payload: BkashRefundStatusPayload) => {
+    const response = await apiClient.post('/payments/bkash/refund/status', payload);
+    return unwrapData<Record<string, unknown>>(response.data);
+  },
+};
+
+export const adminAuditLogsService = {
+  getAuditLogs: async (params?: AuditLogsQueryParams): Promise<AuditLogsResponse> => {
+    const response = await apiClient.get<AdminApiResponse<AuditLog[]>>(`${ADMIN_BASE}/audit-logs`, { params });
+    return listResponse<AuditLog>(response.data);
   },
 };

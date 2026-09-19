@@ -151,7 +151,7 @@ export function useCaregivers(params?: CaregiversQueryParams) {
 
   useEffect(() => {
     fetchCaregivers();
-  }, [params?.verification_status, params?.is_available, params?.page, params?.limit]);
+  }, [params?.verification_status, params?.ekyc_session_status, params?.page, params?.limit]);
 
   const blockCaregiver = async (id: string) => {
     try {
@@ -199,7 +199,7 @@ export function useHospitals(params?: HospitalsQueryParams) {
 
   useEffect(() => {
     fetchHospitals();
-  }, [params?.district, params?.type, params?.page, params?.limit]);
+  }, [params?.district, params?.page, params?.limit]);
 
   const createHospital = async (data: any) => {
     try {

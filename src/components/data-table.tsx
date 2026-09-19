@@ -31,7 +31,8 @@ export type DataTableColumn<T> = {
 export type DataTableFilter = {
   id: string;
   label: string;
-  options: { value: string; label: string }[];
+  type?: 'select' | 'date' | 'text';
+  options?: { value: string; label: string }[];
 };
 
 export type DataTableAction<T> = {
@@ -172,24 +173,46 @@ export function DataTable<T extends Record<string, unknown>>({
             sx={{ minWidth: { md: 280 } }}
           />
         )}
-        {filters.map((filter) => (
-          <TextField
-            key={filter.id}
-            select
-            size="small"
-            label={filter.label}
-            value={filterValues[filter.id] || ''}
-            onChange={(event) => onFilterChange?.(filter.id, event.target.value)}
-            sx={{ minWidth: 160 }}
-          >
-            <MenuItem value="">All</MenuItem>
-            {filter.options.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </TextField>
-        ))}
+        {filters.map((filter) =>
+          filter.type === 'date' ? (
+            <TextField
+              key={filter.id}
+              type="date"
+              size="small"
+              label={filter.label}
+              value={filterValues[filter.id] || ''}
+              onChange={(event) => onFilterChange?.(filter.id, event.target.value)}
+              sx={{ minWidth: 180 }}
+              InputLabelProps={{ shrink: true }}
+            />
+          ) : filter.type === 'text' ? (
+            <TextField
+              key={filter.id}
+              size="small"
+              label={filter.label}
+              value={filterValues[filter.id] || ''}
+              onChange={(event) => onFilterChange?.(filter.id, event.target.value)}
+              sx={{ minWidth: 180 }}
+            />
+          ) : (
+            <TextField
+              key={filter.id}
+              select
+              size="small"
+              label={filter.label}
+              value={filterValues[filter.id] || ''}
+              onChange={(event) => onFilterChange?.(filter.id, event.target.value)}
+              sx={{ minWidth: 160 }}
+            >
+              <MenuItem value="">All</MenuItem>
+              {(filter.options || []).map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          )
+        )}
         <Box sx={{ flexGrow: 1 }} />
         {extraToolbar}
       </Stack>

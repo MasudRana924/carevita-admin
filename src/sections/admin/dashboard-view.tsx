@@ -21,12 +21,11 @@ const KPI_LABELS: Record<string, string> = {
   weekly_bookings: 'Weekly Bookings',
   total_users: 'Total Users',
   total_caregivers: 'Total Caregivers',
-  caregiver_payment_done: 'Caregiver Payment Done',
   platform_wallet_balance: 'Platform Wallet Balance',
   total_paid_revenue: 'Total Paid Revenue',
 };
 
-const PIE_COLORS = ['#2065D1', '#00A76F', '#FFAB00', '#FF5630', '#7635DC', '#078DEE'];
+const MONEY_KEYS = ['platform_wallet_balance', 'total_paid_revenue'];
 
 const CARD_GRADIENTS = [
   'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -48,7 +47,7 @@ const KPI_GRID_SX = {
   mb: 3,
 } as const;
 
-const KPI_SKELETON_COUNT = 14;
+const KPI_SKELETON_COUNT = 9;
 
 function getKpiCardSx(index: number) {
   return {
@@ -100,31 +99,10 @@ export default function DashboardView() {
     .filter(([key]) => isNumeric((stats as any)[key]))
     .map(([key, label]) => ({ key, label, value: Number((stats as any)[key]) }));
 
-  const extraKpis = Object.entries(stats)
-    .filter(
-      ([key, value]) =>
-        isNumeric(value) && !KPI_LABELS[key] && !['page', 'limit', 'total', 'charts'].includes(key)
-    )
-    .map(([key, value]) => ({
-      key,
-      label: key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1'),
-      value: Number(value),
-    }));
-
-  const allKpis = [...kpis, ...extraKpis];
+  const allKpis = kpis;
   
-  // Extract chart data from API response
   const bookingsLast7Days = (charts as any).bookings_last_7_days || [] as Array<{ date: string; count: number }>;
   const paymentsLast7Days = (charts as any).payments_last_7_days || [] as Array<{ date: string; paid: number; pending: number }>;
-
-  const bookingStatusData = (() => {
-    // Since we don't have individual booking data, create mock data for demo
-    return [
-      { name: 'Confirmed', value: 45 },
-      { name: 'Pending', value: 25 },
-      { name: 'Completed', value: 30 },
-    ];
-  })();
 
   const isDashboardLoading =
     dashboardQuery.isLoading || (dashboardQuery.isFetching && !dashboardQuery.data);
@@ -150,7 +128,7 @@ export default function DashboardView() {
                 {item.label}
               </Typography>
               <Typography variant="h4" sx={{ mt: 1, color: 'white' }}>
-                {item.key.toLowerCase().includes('revenue') ? `৳${item.value.toLocaleString()}` : item.value.toLocaleString()}
+                {MONEY_KEYS.includes(item.key) ? `৳${item.value.toLocaleString()}` : item.value.toLocaleString()}
               </Typography>
             </Card>
           ))}
@@ -163,10 +141,6 @@ export default function DashboardView() {
 
       {!isDashboardLoading && paymentsLast7Days.length > 0 && (
         <PaymentsBarCard rows={paymentsLast7Days} />
-      )}
-
-      {!isDashboardLoading && bookingStatusData.length > 1 && (
-        <BookingPieCard data={bookingStatusData} />
       )}
     </DashboardContent>
   );
@@ -184,21 +158,6 @@ function BookingsLineCard({ rows }: { rows: Array<{ date: string; count: number 
     <Card sx={{ p: 2.5, mb: 3 }}>
       <CardHeader title="Bookings (Last 7 Days)" sx={{ px: 0, pt: 0 }} />
       <Chart type="line" series={[{ name: 'Bookings', data }]} options={options} sx={{ height: 320 }} />
-    </Card>
-  );
-}
-
-function BookingPieCard({ data }: { data: Array<{ name: string; value: number }> }) {
-  const options = useChart({
-    labels: data.map((item) => item.name),
-    colors: PIE_COLORS,
-    legend: { show: true },
-  });
-
-  return (
-    <Card sx={{ p: 2.5, mb: 3 }}>
-      <CardHeader title="Recent booking status distribution" sx={{ px: 0, pt: 0 }} />
-      <Chart type="pie" series={data.map((item) => item.value)} options={options} sx={{ height: 280 }} />
     </Card>
   );
 }

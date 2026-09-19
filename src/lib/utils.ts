@@ -1,17 +1,56 @@
 export const API_URL =
   import.meta.env.NEXT_PUBLIC_API_URL || import.meta.env.VITE_API_URL || '';
 
+const BKASH_REFUND_ERRORS: Record<string, string> = {
+  '2072': 'Invalid refund amount.',
+  '2071': 'Refund window has expired.',
+  '2074': 'This payment cannot be reversed.',
+  '2023': 'Insufficient bKash merchant balance.',
+};
+
+export type PaginationMeta = {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+};
+
+export function getErrorCode(error: unknown): string {
+  const data = (error as { response?: { data?: { code?: string | number } } })?.response?.data;
+  return data?.code != null ? String(data.code) : '';
+}
+
+export function isAuthErrorCode(code?: string | null) {
+  return code === 'TOKEN_EXPIRED' || code === 'UNAUTHORIZED';
+}
+
 export function getErrorMessage(error: unknown, fallback = 'Something went wrong. Please try again.') {
   if (!error) return fallback;
 
   if (typeof error === 'string') return error;
 
   const anyError = error as {
+    code?: string;
     message?: string;
-    response?: { data?: { message?: string; error?: string; errors?: Array<{ msg?: string; message?: string }> } };
+    response?: {
+      data?: {
+        message?: string;
+        error?: string;
+        code?: string | number;
+        errors?: Array<{ msg?: string; message?: string }>;
+      };
+    };
   };
 
+  if (anyError.code === 'ECONNABORTED') {
+    return anyError.message || 'The request timed out. Please try again.';
+  }
+
   const data = anyError.response?.data;
+  const code = data?.code != null ? String(data.code) : '';
+  if (code && BKASH_REFUND_ERRORS[code]) return BKASH_REFUND_ERRORS[code];
   if (data?.message) return data.message;
   if (data?.error) return data.error;
   if (Array.isArray(data?.errors) && data.errors[0]) {
@@ -24,7 +63,34 @@ export function getErrorMessage(error: unknown, fallback = 'Something went wrong
   return fallback;
 }
 
-export function unwrapData<T = unknown>(payload: unknown): { data: T; meta?: Record<string, unknown>; message?: string } {
+export function getPagination(meta?: Record<string, unknown> | null): PaginationMeta {
+  const nested =
+    meta && typeof meta.pagination === 'object' && meta.pagination
+      ? (meta.pagination as Record<string, unknown>)
+      : meta || {};
+
+  const page = Number(nested.page) || 1;
+  const limit = Number(nested.limit) || 20;
+  const total = Number(nested.total) || 0;
+  const totalPages = Number(nested.totalPages) || (limit ? Math.ceil(total / limit) : 0);
+
+  return {
+    page,
+    limit,
+    total,
+    totalPages,
+    hasNext: nested.hasNext != null ? Boolean(nested.hasNext) : page < totalPages,
+    hasPrev: nested.hasPrev != null ? Boolean(nested.hasPrev) : page > 1,
+  };
+}
+
+export function unwrapData<T = unknown>(payload: unknown): {
+  data: T;
+  meta?: Record<string, unknown>;
+  message?: string;
+  code?: string;
+  success?: boolean;
+} {
   if (payload == null) {
     return { data: payload as T };
   }
@@ -44,12 +110,15 @@ export function unwrapData<T = unknown>(payload: unknown): { data: T; meta?: Rec
       data: body.data as T,
       meta: (body.meta as Record<string, unknown>) || undefined,
       message: typeof body.message === 'string' ? body.message : undefined,
+      code: body.code != null ? String(body.code) : undefined,
+      success: typeof body.success === 'boolean' ? body.success : undefined,
     };
   }
 
   return {
     data: payload as T,
     message: typeof body.message === 'string' ? body.message : undefined,
+    code: body.code != null ? String(body.code) : undefined,
   };
 }
 

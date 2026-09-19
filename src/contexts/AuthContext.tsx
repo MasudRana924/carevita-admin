@@ -166,17 +166,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (identifier: string, password: string) => {
       dispatch({ type: 'AUTH_START' });
       try {
-        const trimmed = identifier.trim();
-        const payload = trimmed.includes('@')
-          ? { email: trimmed, password }
-          : { phone: trimmed, password };
-
-        const result = await authApi.login(payload);
+        const result = await authApi.login({ email: identifier.trim(), password });
         if (!result.token) {
           throw new Error('No access token received');
         }
 
         const loginUser = toStoredUser(result.user);
+        if (loginUser?.role && !isAdminRole(loginUser.role)) {
+          throw new Error('Access denied. Admin role is required.');
+        }
+
         setSession({
           accessToken: result.token,
           refreshToken: result.refreshToken,

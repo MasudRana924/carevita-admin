@@ -28,8 +28,6 @@ export function NewHospitalView() {
     address: '',
     phone: '',
     email: '',
-    location_lat: '',
-    location_long: '',
     city: '',
     district: '',
     type: '',
@@ -58,9 +56,14 @@ export function NewHospitalView() {
     setLoading(true);
     try {
       await createHospital({
-        ...formData,
-        location_lat: formData.location_lat ? Number(formData.location_lat) : undefined,
-        location_long: formData.location_long ? Number(formData.location_long) : undefined,
+        name: formData.name,
+        address: formData.address,
+        phone: formData.phone,
+        email: formData.email,
+        city: formData.city,
+        district: formData.district,
+        type: formData.type,
+        details: formData.details,
         photo: photo || undefined,
       });
       showSnackbar('Hospital created successfully', 'success');
@@ -70,8 +73,6 @@ export function NewHospitalView() {
         address: '',
         phone: '',
         email: '',
-        location_lat: '',
-        location_long: '',
         city: '',
         district: '',
         type: '',
@@ -131,23 +132,6 @@ export function NewHospitalView() {
                   value={formData.email}
                   onChange={handleInputChange('email')}
                   type="email"
-                />
-              </Stack>
-
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
-                <TextField
-                  fullWidth
-                  label="Latitude"
-                  value={formData.location_lat}
-                  onChange={handleInputChange('location_lat')}
-                  type="number"
-                />
-                <TextField
-                  fullWidth
-                  label="Longitude"
-                  value={formData.location_long}
-                  onChange={handleInputChange('location_long')}
-                  type="number"
                 />
               </Stack>
 
@@ -220,8 +204,6 @@ export function NewHospitalView() {
                       address: '',
                       phone: '',
                       email: '',
-                      location_lat: '',
-                      location_long: '',
                       city: '',
                       district: '',
                       type: '',

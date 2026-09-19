@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
 
-import { bookingsApi, ordersApi, paymentsApi, providersApi, usersApi } from 'src/lib/api';
+import { bookingsApi, caregiversApi, hospitalsApi, usersApi } from 'src/lib/api';
 import { pickString } from 'src/lib/utils';
 
 type SearchHit = {
@@ -27,9 +27,9 @@ export function GlobalSearch() {
     queryFn: () => usersApi.list({ limit: 20, page: 1 }),
     enabled,
   });
-  const providersQuery = useQuery({
-    queryKey: ['global-search', 'providers', input],
-    queryFn: () => providersApi.list({ limit: 20, page: 1 }),
+  const caregiversQuery = useQuery({
+    queryKey: ['global-search', 'caregivers', input],
+    queryFn: () => caregiversApi.list({ limit: 20, page: 1 }),
     enabled,
   });
   const bookingsQuery = useQuery({
@@ -37,14 +37,9 @@ export function GlobalSearch() {
     queryFn: () => bookingsApi.list({ limit: 20, page: 1 }),
     enabled,
   });
-  const paymentsQuery = useQuery({
-    queryKey: ['global-search', 'payments', input],
-    queryFn: () => paymentsApi.list({ limit: 20, page: 1 }),
-    enabled,
-  });
-  const ordersQuery = useQuery({
-    queryKey: ['global-search', 'orders', input],
-    queryFn: () => ordersApi.list({ limit: 20, page: 1 }),
+  const hospitalsQuery = useQuery({
+    queryKey: ['global-search', 'hospitals', input],
+    queryFn: () => hospitalsApi.list({ limit: 20, page: 1 }),
     enabled,
   });
 
@@ -69,21 +64,19 @@ export function GlobalSearch() {
     };
 
     push(usersQuery.data?.items || [], 'Users', '/users', ['name', 'email', 'phone']);
-    push(providersQuery.data?.items || [], 'Providers', '/providers', ['name', 'email', 'phone']);
+    push(caregiversQuery.data?.items || [], 'Caregivers', '/caregivers', ['name', 'email', 'phone']);
     push(bookingsQuery.data?.items || [], 'Bookings', '/bookings', ['booking_number', 'customer_name', 'id']);
-    push(paymentsQuery.data?.items || [], 'Payments', '/payments', ['id', 'transaction_id']);
-    push(ordersQuery.data?.items || [], 'Orders', '/orders', ['order_number', 'customer_name', 'id']);
+    push(hospitalsQuery.data?.items || [], 'Hospitals', '/hospitals', ['name', 'district', 'phone']);
 
     return hits.slice(0, 20);
-  }, [input, usersQuery.data, providersQuery.data, bookingsQuery.data, paymentsQuery.data, ordersQuery.data]);
+  }, [input, usersQuery.data, caregiversQuery.data, bookingsQuery.data, hospitalsQuery.data]);
 
   const loading =
     enabled &&
     (usersQuery.isFetching ||
-      providersQuery.isFetching ||
+      caregiversQuery.isFetching ||
       bookingsQuery.isFetching ||
-      paymentsQuery.isFetching ||
-      ordersQuery.isFetching);
+      hospitalsQuery.isFetching);
 
   return (
     <Autocomplete

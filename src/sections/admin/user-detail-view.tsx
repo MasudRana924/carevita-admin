@@ -22,8 +22,7 @@ import { usersApi } from 'src/lib/api';
 import { getErrorMessage, getRecordId, pickString } from 'src/lib/utils';
 import { fDateTime } from 'src/utils/format-time';
 
-const ROLE_OPTIONS = ['USER', 'CAREGIVER', 'NURSE', 'ADMIN'];
-const STATUS_OPTIONS = ['active', 'inactive', 'banned'];
+const STATUS_OPTIONS = ['active', 'blocked'];
 
 function formatValue(value: unknown) {
   if (value === null || value === undefined || value === '') return '—';
@@ -82,15 +81,9 @@ export function UserDetailView() {
   }, [user]);
 
   const mutation = useMutation({
-    mutationFn: () =>
-      usersApi.update(id, {
-        role,
-        status,
-        is_verified: verified === 'true',
-        ekyc_status: ekyc === 'true',
-      }),
+    mutationFn: () => usersApi.updateStatus(id, status),
     onSuccess: () => {
-      showSnackbar('User updated successfully', 'success');
+      showSnackbar('User status updated successfully', 'success');
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       queryClient.invalidateQueries({ queryKey: ['admin-user', id] });
       navigate(`/users/${id}`, { replace: true });
@@ -225,22 +218,10 @@ export function UserDetailView() {
 
               <InfoCard title="Account">
                 {editing ? (
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gap: 2.5,
-                      gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                    }}
-                  >
-                    <TextField select label="Role" value={role} onChange={(event) => setRole(event.target.value)}>
-                      {ROLE_OPTIONS.map((item) => (
-                        <MenuItem key={item} value={item}>
-                          {item}
-                        </MenuItem>
-                      ))}
-                    </TextField>
+                  <Box sx={{ maxWidth: 320 }}>
                     <TextField
                       select
+                      fullWidth
                       label="Status"
                       value={status}
                       onChange={(event) => setStatus(event.target.value)}
@@ -250,24 +231,6 @@ export function UserDetailView() {
                           {item}
                         </MenuItem>
                       ))}
-                    </TextField>
-                    <TextField
-                      select
-                      label="Email verified"
-                      value={verified}
-                      onChange={(event) => setVerified(event.target.value)}
-                    >
-                      <MenuItem value="true">Verified</MenuItem>
-                      <MenuItem value="false">Unverified</MenuItem>
-                    </TextField>
-                    <TextField
-                      select
-                      label="eKYC status"
-                      value={ekyc}
-                      onChange={(event) => setEkyc(event.target.value)}
-                    >
-                      <MenuItem value="true">Verified</MenuItem>
-                      <MenuItem value="false">Pending</MenuItem>
                     </TextField>
                   </Box>
                 ) : (

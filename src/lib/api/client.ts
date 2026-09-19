@@ -1,6 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
-import { API_URL, getErrorMessage } from 'src/lib/utils';
+import { API_URL, getErrorMessage, isAuthErrorCode, unwrapData } from 'src/lib/utils';
 import { clearSession, getAccessToken, getRefreshToken, setSession } from 'src/lib/auth/storage';
 
 type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean };
@@ -39,10 +39,14 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const original = error.config as RetryConfig | undefined;
     const status = error.response?.status;
+    const envelopeCode = unwrapData(error.response?.data).code;
+    const rawCode = (error.response?.data as { code?: string } | undefined)?.code;
     const url = original?.url || '';
     const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/refresh-token');
+    const shouldRefresh =
+      status === 401 || isAuthErrorCode(envelopeCode) || isAuthErrorCode(rawCode);
 
-    if (status === 401 && original && !original._retry && !isAuthEndpoint) {
+    if (shouldRefresh && original && !original._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           pendingQueue.push((token) => {
@@ -66,8 +70,10 @@ apiClient.interceptors.response.use(
         }
 
         const { data } = await axios.post(`${API_URL}/auth/refresh-token`, { refreshToken });
-        const nextAccess = data?.token || data?.data?.token || data?.accessToken;
-        const nextRefresh = data?.refreshToken || data?.data?.refreshToken || refreshToken;
+        const payload = unwrapData<Record<string, unknown>>(data).data || {};
+        const source = (payload && typeof payload === 'object' ? payload : data) as Record<string, unknown>;
+        const nextAccess = (source.token || source.accessToken || data?.token) as string | undefined;
+        const nextRefresh = (source.refreshToken || data?.refreshToken || refreshToken) as string;
 
         if (!nextAccess) {
           throw new Error('No access token');
@@ -89,7 +95,7 @@ apiClient.interceptors.response.use(
       }
     }
 
-    if (status === 401 && isAuthEndpoint) {
+    if (shouldRefresh && isAuthEndpoint) {
       return Promise.reject(error);
     }
 

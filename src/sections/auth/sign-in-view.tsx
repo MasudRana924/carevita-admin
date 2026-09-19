@@ -86,7 +86,7 @@ export function SignInView() {
           <Box sx={{ gap: 1.5, display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 5 }}>
             <Typography variant="h4">Admin sign in</Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
-              Sign in with your CareMate admin phone or email.
+              Sign in with your CareMate admin email.
             </Typography>
           </Box>
 
@@ -99,8 +99,9 @@ export function SignInView() {
 
             <TextField
               fullWidth
-              name="identifier"
-              label="Phone or email"
+              name="email"
+              label="Email"
+              type="email"
               value={identifier}
               onChange={(event) => setIdentifier(event.target.value)}
               required

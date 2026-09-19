@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Popover from '@mui/material/Popover';
@@ -13,6 +14,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { fDateTime } from 'src/utils/format-time';
 
 import { Label } from 'src/components/label';
+import { StatusBadge } from 'src/components/status-badge';
 import { LucideIcon } from 'src/components/lucide-icons';
 
 // ----------------------------------------------------------------------
@@ -38,6 +40,13 @@ export type CaregiverTableRowProps = {
   completed_bookings: number;
   is_available: boolean;
   ekyc_status: boolean;
+  ekyc_session_status?: string | null;
+  ekyc_verified_at?: string | null;
+  ekyc_reference_id?: string | null;
+  user_ekyc_status?: boolean;
+  user_ekyc_session_status?: string | null;
+  user_ekyc_verified_at?: string | null;
+  user_ekyc_reference_id?: string | null;
   profile_photo: string | null;
   created_at: string;
 };
@@ -50,8 +59,21 @@ type CaregiverTableRowComponentProps = {
   onUnblockCaregiver: (id: string) => void;
 };
 
-export function CaregiverTableRow({ row, selected, onSelectRow, onBlockCaregiver, onUnblockCaregiver }: CaregiverTableRowComponentProps) {
+function getEkycSessionStatus(row: CaregiverTableRowProps) {
+  return row.user_ekyc_session_status || row.ekyc_session_status || '';
+}
+
+export function CaregiverTableRow({
+  row,
+  selected,
+  onSelectRow,
+  onBlockCaregiver,
+  onUnblockCaregiver,
+}: CaregiverTableRowComponentProps) {
+  const navigate = useNavigate();
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
+  const ekycSessionStatus = getEkycSessionStatus(row);
+  const needsReview = ekycSessionStatus === 'In Review';
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     setOpenPopover(event.currentTarget);
@@ -71,9 +93,21 @@ export function CaregiverTableRow({ row, selected, onSelectRow, onBlockCaregiver
     onUnblockCaregiver(row.id);
   }, [row.id, handleClosePopover, onUnblockCaregiver]);
 
+  const handleReviewEkyc = useCallback(() => {
+    handleClosePopover();
+    navigate(`/caregivers/${row.id}/ekyc`);
+  }, [handleClosePopover, navigate, row.id]);
+
   return (
     <>
-      <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
+      <TableRow
+        hover
+        tabIndex={-1}
+        role="checkbox"
+        selected={selected}
+        onDoubleClick={() => navigate(`/caregivers/${row.id}/ekyc`)}
+        sx={{ cursor: 'pointer' }}
+      >
         <TableCell padding="checkbox">
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
         </TableCell>
@@ -138,10 +172,11 @@ export function CaregiverTableRow({ row, selected, onSelectRow, onBlockCaregiver
         </TableCell>
 
         <TableCell>
-          <Label
-            variant="soft"
-            color={row.is_available ? 'success' : 'default'}
-          >
+          <StatusBadge value={ekycSessionStatus || (row.user_ekyc_status || row.ekyc_status ? 'Approved' : '—')} />
+        </TableCell>
+
+        <TableCell>
+          <Label variant="soft" color={row.is_available ? 'success' : 'default'}>
             {row.is_available ? 'Available' : 'Unavailable'}
           </Label>
         </TableCell>
@@ -179,7 +214,7 @@ export function CaregiverTableRow({ row, selected, onSelectRow, onBlockCaregiver
           sx={{
             p: 0.5,
             gap: 0.5,
-            width: 160,
+            width: 180,
             display: 'flex',
             flexDirection: 'column',
             [`& .${menuItemClasses.root}`]: {
@@ -190,6 +225,11 @@ export function CaregiverTableRow({ row, selected, onSelectRow, onBlockCaregiver
             },
           }}
         >
+          <MenuItem onClick={handleReviewEkyc} sx={{ color: needsReview ? 'warning.main' : 'inherit' }}>
+            <LucideIcon icon="solar:shield-check-bold" />
+            {needsReview ? 'Review eKYC' : 'View eKYC'}
+          </MenuItem>
+
           {row.verification_status === 'SUSPENDED' ? (
             <MenuItem onClick={handleUnblockCaregiver} sx={{ color: 'success.main' }}>
               <LucideIcon icon="solar:shield-check-bold" />

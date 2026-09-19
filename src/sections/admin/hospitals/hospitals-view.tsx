@@ -8,12 +8,15 @@ import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { Breadcrumb } from 'src/components/breadcrumb';
 import { TableNoData } from 'src/components/table-no-data';
+import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useSnackbar } from 'src/components/snackbar';
 import { useHospitals } from 'src/hooks/useAdminApi';
 
@@ -35,7 +38,6 @@ export function HospitalsView() {
 
   const { hospitals, loading, error, meta, refetch, updateHospitalStatus } = useHospitals({
     district: districtFilter || undefined,
-    type: typeFilter || undefined,
     page: table.page + 1,
     limit: table.rowsPerPage,
   });
@@ -49,6 +51,8 @@ export function HospitalsView() {
 
   const notFound = !dataFiltered.length && !!filterName;
 
+  const [confirm, setConfirm] = useState<{ id: string; is_active: boolean } | null>(null);
+
   const handleClearFilters = useCallback(() => {
     setFilterName('');
     setDistrictFilter('');
@@ -56,14 +60,20 @@ export function HospitalsView() {
     table.onResetPage();
   }, [table]);
 
-  const handleUpdateStatus = useCallback(async (id: string, is_active: boolean) => {
+  const handleUpdateStatus = useCallback((id: string, is_active: boolean) => {
+    setConfirm({ id, is_active });
+  }, []);
+
+  const handleConfirm = useCallback(async () => {
+    if (!confirm) return;
     try {
-      await updateHospitalStatus(id, is_active);
-      showSnackbar(`Hospital ${is_active ? 'activated' : 'deactivated'} successfully`, 'success');
-    } catch (error: any) {
-      showSnackbar(error.message || 'Failed to update hospital status', 'error');
+      await updateHospitalStatus(confirm.id, confirm.is_active);
+      showSnackbar(`Hospital ${confirm.is_active ? 'activated' : 'deactivated'} successfully`, 'success');
+      setConfirm(null);
+    } catch (err: any) {
+      showSnackbar(err.message || 'Failed to update hospital status', 'error');
     }
-  }, [updateHospitalStatus, showSnackbar]);
+  }, [confirm, updateHospitalStatus, showSnackbar]);
 
   // Refetch when filters change
   useEffect(() => {
@@ -136,10 +146,7 @@ export function HospitalsView() {
                     </TableCell>
                   </TableRow>
                 ) : dataFiltered
-                  .slice(
-                    table.page * table.rowsPerPage,
-                    table.page * table.rowsPerPage + table.rowsPerPage
-                  )
+                  .filter((row) => !typeFilter || String(row.type || '').toLowerCase() === typeFilter.toLowerCase())
                   .map((row) => (
                     <HospitalTableRow
                       key={row.id}
@@ -166,6 +173,28 @@ export function HospitalsView() {
           onRowsPerPageChange={table.onChangeRowsPerPage}
         />
       </Card>
+
+      <ConfirmDialog
+        open={!!confirm}
+        onClose={() => setConfirm(null)}
+        title={confirm?.is_active ? 'Activate hospital' : 'Deactivate hospital'}
+        content={
+          <Typography>
+            {confirm?.is_active
+              ? 'Activate this hospital?'
+              : 'Set this hospital as inactive?'}
+          </Typography>
+        }
+        action={
+          <Button
+            variant="contained"
+            color={confirm?.is_active ? 'success' : 'warning'}
+            onClick={handleConfirm}
+          >
+            {confirm?.is_active ? 'Activate' : 'Deactivate'}
+          </Button>
+        }
+      />
     </DashboardContent>
   );
 }
