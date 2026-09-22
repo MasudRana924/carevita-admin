@@ -25,7 +25,9 @@ const COLOR_MAP: Record<string, LabelColor> = {
   OPEN: 'warning',
   IN_REVIEW: 'info',
   'IN REVIEW': 'info',
+  DISMISSED: 'default',
   DECLINED: 'error',
+  REVERIFY_REQUIRED: 'warning',
   'IN PROGRESS': 'warning',
   'NOT STARTED': 'default',
   PARTIAL_REFUND: 'warning',
@@ -62,9 +64,18 @@ export function StatusBadge({
   value?: string | boolean | null;
   label?: string;
 }) {
+  const normalized = typeof value === 'string' ? value.toUpperCase().replace(/\s+/g, '_') : value;
   const text =
     label ||
-    (typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value ? String(value).replace(/_/g, ' ') : '—');
+    (typeof value === 'boolean'
+      ? value
+        ? 'Yes'
+        : 'No'
+      : value
+        ? normalized === 'SEARCHING_PROVIDER'
+          ? 'Searching caregiver'
+          : String(value).replace(/_/g, ' ')
+        : '—');
 
   return (
     <Label color={statusColor(value)} variant="soft">

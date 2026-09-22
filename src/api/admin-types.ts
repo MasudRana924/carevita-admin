@@ -27,7 +27,7 @@ export interface PaginationMeta {
 // Profile types
 export interface AdminProfile {
   id: string;
-  phone: string;
+  phone: string | null;
   email: string;
   name: string;
   profile_photo: string | null;
@@ -35,9 +35,10 @@ export interface AdminProfile {
   status: 'active' | 'blocked';
   is_verified: boolean;
   ekyc_status: boolean;
+  ekyc_session_status?: string | null;
   ekyc_verified_at: string | null;
-  ekyc_reference_id: string | null;
-  language_preference: string;
+  ekyc_reference_id?: string | null;
+  language_preference?: string | null;
   emergency_contact: string | null;
   address: string | null;
   date_of_birth: string | null;
@@ -57,6 +58,11 @@ export interface DashboardData {
   caregiver_payment_done?: number;
   platform_wallet_balance: number;
   total_paid_revenue: number;
+  /** camelCase aliases returned by older API payloads */
+  totalUsers?: number;
+  totalBookings?: number;
+  todayBookings?: number;
+  totalCaregivers?: number;
   charts: {
     bookings_last_7_days: Array<{ date: string; count: number }>;
     payments_last_7_days: Array<{ date: string; paid: number; pending: number }>;
@@ -105,6 +111,13 @@ export type EkycSessionStatus =
   | 'Declined'
   | string;
 
+export type CredentialStatus =
+  | 'VERIFIED'
+  | 'REJECTED'
+  | 'PENDING'
+  | 'SUSPENDED'
+  | 'REVERIFY_REQUIRED';
+
 export interface Caregiver {
   id: string;
   user_id: string;
@@ -121,6 +134,9 @@ export interface Caregiver {
   thana: string;
   verification_status: 'PENDING' | 'APPROVED' | 'SUSPENDED';
   verification_note: string | null;
+  credential_status?: CredentialStatus | null;
+  credential_note?: string | null;
+  credential_expires_at?: string | null;
   rating: string;
   completed_bookings: number;
   is_available: boolean;
@@ -190,6 +206,13 @@ export interface CaregiverEkycActionPayload {
   comment?: string;
 }
 
+export interface CaregiverCredentialsPayload {
+  credential_status: CredentialStatus;
+  note?: string;
+  credential_note?: string;
+  credential_expires_at?: string;
+}
+
 // Hospital types
 export interface Hospital {
   id: string;
@@ -197,8 +220,8 @@ export interface Hospital {
   address: string | null;
   phone: string | null;
   email: string | null;
-  location_lat: string;
-  location_long: string;
+  location_lat: string | null;
+  location_long: string | null;
   city: string | null;
   district: string | null;
   type: string | null;
@@ -226,6 +249,8 @@ export interface HospitalCreateData {
   district?: string;
   type?: string;
   details?: string;
+  location_lat?: string | number;
+  location_long?: string | number;
   photo?: File;
 }
 
@@ -238,6 +263,8 @@ export interface HospitalUpdateData {
   district?: string;
   type?: string;
   details?: string;
+  location_lat?: string | number;
+  location_long?: string | number;
   photo?: File;
   is_active?: boolean;
 }
@@ -265,6 +292,9 @@ export type BookingStatus =
 export interface Booking {
   id: string;
   status: BookingStatus | string;
+  offer_expires_at?: string | null;
+  accept_timeout_minutes?: number | null;
+  payout_frozen?: boolean;
   [key: string]: unknown;
 }
 
@@ -361,4 +391,59 @@ export interface AuditLogsQueryParams {
 export interface AuditLogsResponse {
   data: AuditLog[];
   meta: PaginationMeta;
+}
+
+export type SafetyIncidentStatus = 'OPEN' | 'IN_REVIEW' | 'RESOLVED' | 'DISMISSED';
+
+export interface SafetyIncident {
+  id: string;
+  booking_id?: string;
+  booking_number?: string;
+  reported_by?: string;
+  reporter_name?: string;
+  status: SafetyIncidentStatus | string;
+  note?: string | null;
+  admin_note?: string | null;
+  payout_frozen?: boolean;
+  created_at?: string;
+  [key: string]: unknown;
+}
+
+export interface SafetyIncidentsQueryParams {
+  status?: SafetyIncidentStatus | string;
+  page?: number;
+  limit?: number;
+}
+
+export interface SafetyIncidentsResponse {
+  data: SafetyIncident[];
+  meta: PaginationMeta;
+}
+
+export interface SafetyIncidentUpdatePayload {
+  status: SafetyIncidentStatus;
+  note?: string;
+  admin_note?: string;
+  unfreeze_payout?: boolean;
+}
+
+export type PrivacyPolicyAudience = 'USER' | 'CAREGIVER';
+
+export interface PrivacyPolicy {
+  id: string;
+  audience: PrivacyPolicyAudience | string;
+  title: string;
+  content: string;
+  version?: string;
+  is_published?: boolean;
+  updated_at?: string;
+  [key: string]: unknown;
+}
+
+export interface PrivacyPolicyUpsertPayload {
+  audience: PrivacyPolicyAudience | 'NURSE';
+  title: string;
+  content: string;
+  version?: string;
+  is_published?: boolean;
 }

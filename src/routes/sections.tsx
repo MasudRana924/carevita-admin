@@ -28,6 +28,12 @@ const BookingsView = lazy(() => import('src/sections/admin/bookings').then((m) =
 const BookingDetailView = lazy(() => import('src/sections/admin/bookings').then((m) => ({ default: m.BookingDetailView })));
 const DisputesView = lazy(() => import('src/sections/admin/disputes').then((m) => ({ default: m.DisputesView })));
 const WithdrawalsView = lazy(() => import('src/sections/admin/withdrawals').then((m) => ({ default: m.WithdrawalsView })));
+const SafetyIncidentsView = lazy(() =>
+  import('src/sections/admin/safety-incidents').then((m) => ({ default: m.SafetyIncidentsView }))
+);
+const PrivacyPoliciesView = lazy(() =>
+  import('src/sections/admin/privacy-policies').then((m) => ({ default: m.PrivacyPoliciesView }))
+);
 const AuditLogsView = lazy(() => import('src/sections/admin/audit-logs').then((m) => ({ default: m.AuditLogsView })));
 const UserDetailView = lazy(() => import('src/sections/admin/detail-views').then((m) => ({ default: m.UserDetailView })));
 const ProfileView = lazy(() => import('src/sections/admin/profile').then((m) => ({ default: m.ProfileView })));
@@ -98,6 +104,8 @@ export const routesSection: RouteObject[] = [
       { path: 'bookings/:id', element: <BookingDetailView /> },
       { path: 'disputes', element: <DisputesView /> },
       { path: 'withdrawals', element: <WithdrawalsView /> },
+      { path: 'safety-incidents', element: <SafetyIncidentsView /> },
+      { path: 'privacy-policies', element: <PrivacyPoliciesView /> },
       { path: 'audit-logs', element: <AuditLogsView /> },
       { path: 'profile', element: <ProfileView /> },
       { path: 'settings', element: <SettingsView /> },

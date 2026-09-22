@@ -98,6 +98,11 @@ export function CaregiverTableRow({
     navigate(`/caregivers/${row.id}/ekyc`);
   }, [handleClosePopover, navigate, row.id]);
 
+  const handleReviewCredentials = useCallback(() => {
+    handleClosePopover();
+    navigate(`/caregivers/${row.id}/ekyc#credentials`);
+  }, [handleClosePopover, navigate, row.id]);
+
   return (
     <>
       <TableRow
@@ -214,7 +219,7 @@ export function CaregiverTableRow({
           sx={{
             p: 0.5,
             gap: 0.5,
-            width: 180,
+            width: 200,
             display: 'flex',
             flexDirection: 'column',
             [`& .${menuItemClasses.root}`]: {
@@ -228,6 +233,11 @@ export function CaregiverTableRow({
           <MenuItem onClick={handleReviewEkyc} sx={{ color: needsReview ? 'warning.main' : 'inherit' }}>
             <LucideIcon icon="solar:shield-check-bold" />
             {needsReview ? 'Review eKYC' : 'View eKYC'}
+          </MenuItem>
+
+          <MenuItem onClick={handleReviewCredentials}>
+            <LucideIcon icon="eva:file-text-outline" />
+            Credentials
           </MenuItem>
 
           {row.verification_status === 'SUSPENDED' ? (

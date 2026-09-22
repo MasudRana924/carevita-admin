@@ -21,6 +21,7 @@ const KPI_LABELS: Record<string, string> = {
   weekly_bookings: 'Weekly Bookings',
   total_users: 'Total Users',
   total_caregivers: 'Total Caregivers',
+  caregiver_payment_done: 'Caregiver Payments Done',
   platform_wallet_balance: 'Platform Wallet Balance',
   total_paid_revenue: 'Total Paid Revenue',
 };
@@ -92,12 +93,20 @@ export default function DashboardView() {
     queryFn: () => adminDashboardService.getDashboard() 
   });
 
-  const stats = dashboardQuery.data || {} as Record<string, unknown>;
-  const charts = (stats as any).charts || {} as Record<string, unknown>;
-  
+  const stats = dashboardQuery.data || ({} as Record<string, unknown>);
+  const charts = (stats as any).charts || ({} as Record<string, unknown>);
+
+  const normalizedStats: Record<string, unknown> = {
+    ...stats,
+    total_bookings: (stats as any).total_bookings ?? (stats as any).totalBookings,
+    today_bookings: (stats as any).today_bookings ?? (stats as any).todayBookings,
+    total_users: (stats as any).total_users ?? (stats as any).totalUsers,
+    total_caregivers: (stats as any).total_caregivers ?? (stats as any).totalCaregivers,
+  };
+
   const kpis = Object.entries(KPI_LABELS)
-    .filter(([key]) => isNumeric((stats as any)[key]))
-    .map(([key, label]) => ({ key, label, value: Number((stats as any)[key]) }));
+    .filter(([key]) => isNumeric(normalizedStats[key]))
+    .map(([key, label]) => ({ key, label, value: Number(normalizedStats[key]) }));
 
   const allKpis = kpis;
   

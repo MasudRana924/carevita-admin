@@ -46,3 +46,12 @@ export async function updatePassword(payload: { currentPassword: string; newPass
   const response = await apiClient.put('/auth/password', payload);
   return unwrapData(response.data).data;
 }
+
+export async function logout(refreshToken?: string | null) {
+  if (!refreshToken) return;
+  try {
+    await apiClient.post('/auth/logout', { refreshToken });
+  } catch {
+    // Local session is cleared regardless; ignore network/logout failures.
+  }
+}

@@ -23,7 +23,7 @@ export function getErrorCode(error: unknown): string {
 }
 
 export function isAuthErrorCode(code?: string | null) {
-  return code === 'TOKEN_EXPIRED' || code === 'UNAUTHORIZED';
+  return code === 'TOKEN_EXPIRED' || code === 'TOKEN_INVALID' || code === 'UNAUTHORIZED';
 }
 
 export function getErrorMessage(error: unknown, fallback = 'Something went wrong. Please try again.') {

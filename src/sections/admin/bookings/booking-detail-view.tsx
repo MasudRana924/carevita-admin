@@ -26,6 +26,8 @@ import { bookingsApi, bkashApi } from 'src/lib/api';
 import { getErrorMessage, pickNumber, pickString } from 'src/lib/utils';
 import { fDateTime } from 'src/utils/format-time';
 
+import { OfferExpiryText } from './offer-expiry-text';
+
 const MAX_REFUNDS = 10;
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -157,6 +159,12 @@ export function BookingDetailView() {
 
   const cancelResult = useMemo(() => asRecord(cancelMutation.data), [cancelMutation.data]);
 
+  const bookingStatus = pickString(booking, ['status'], '');
+  const offerExpiresAt = pickString(booking, ['offer_expires_at'], '');
+  const acceptTimeoutMinutes = pickNumber(booking, ['accept_timeout_minutes']);
+  const isProviderAssigned = bookingStatus === 'PROVIDER_ASSIGNED';
+  const isSearching = bookingStatus === 'SEARCHING_PROVIDER';
+
   if (bookingQuery.isLoading) {
     return (
       <DashboardContent maxWidth="xl">
@@ -190,10 +198,52 @@ export function BookingDetailView() {
       <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mb: 3 }}>
         <InfoCard title="Booking">
           <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-            <InfoField label="Status" value={<StatusBadge value={pickString(booking, ['status'], '')} />} />
+            <InfoField
+              label="Status"
+              value={
+                <StatusBadge
+                  value={bookingStatus}
+                  label={isSearching ? 'Searching caregiver' : undefined}
+                />
+              }
+            />
             <InfoField label="Customer" value={pickString(booking, ['customer_name', 'user_name', 'user_id'])} />
             <InfoField label="Caregiver" value={pickString(booking, ['caregiver_name', 'provider_name'])} />
             <InfoField label="Created" value={booking.created_at ? fDateTime(String(booking.created_at)) : '—'} />
+            {isProviderAssigned && offerExpiresAt && offerExpiresAt !== '—' && (
+              <Box sx={{ gridColumn: '1 / -1' }}>
+                <InfoField
+                  label="Offer window"
+                  value={
+                    <OfferExpiryText
+                      expiresAt={offerExpiresAt}
+                      timeoutMinutes={acceptTimeoutMinutes}
+                    />
+                  }
+                />
+              </Box>
+            )}
+            {isSearching && (
+              <Box sx={{ gridColumn: '1 / -1' }}>
+                <Typography variant="body2" color="info.main">
+                  Searching caregiver — waiting for assignment or reassignment after reject/timeout.
+                </Typography>
+              </Box>
+            )}
+            {acceptTimeoutMinutes != null && isProviderAssigned && (
+              <InfoField label="Accept timeout" value={`${acceptTimeoutMinutes} minutes`} />
+            )}
+            {booking.payout_frozen != null && (
+              <InfoField
+                label="Payout"
+                value={
+                  <StatusBadge
+                    value={Boolean(booking.payout_frozen)}
+                    label={booking.payout_frozen ? 'Frozen' : 'OK'}
+                  />
+                }
+              />
+            )}
           </Box>
         </InfoCard>
 

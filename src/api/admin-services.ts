@@ -13,6 +13,7 @@ import type {
   CaregiverBlockResponse,
   CaregiverEkycDetail,
   CaregiverEkycActionPayload,
+  CaregiverCredentialsPayload,
   Hospital,
   HospitalsQueryParams,
   HospitalCreateData,
@@ -36,6 +37,12 @@ import type {
   AuditLog,
   AuditLogsQueryParams,
   AuditLogsResponse,
+  SafetyIncident,
+  SafetyIncidentsQueryParams,
+  SafetyIncidentsResponse,
+  SafetyIncidentUpdatePayload,
+  PrivacyPolicy,
+  PrivacyPolicyUpsertPayload,
 } from './admin-types';
 
 const ADMIN_BASE = '/admin';
@@ -141,6 +148,19 @@ export const adminCaregiversService = {
     const envelope = unwrapEnvelope<CaregiverEkycDetail>(response.data);
     return { data: envelope.data, message: envelope.message };
   },
+
+  reviewCredentials: async (id: string, body: CaregiverCredentialsPayload): Promise<Caregiver> => {
+    const payload: CaregiverCredentialsPayload = {
+      credential_status: body.credential_status,
+    };
+    if (body.note) payload.note = body.note;
+    if (body.credential_expires_at) payload.credential_expires_at = body.credential_expires_at;
+    const response = await apiClient.post<AdminApiResponse<Caregiver>>(
+      `${ADMIN_BASE}/caregivers/${id}/credentials`,
+      payload
+    );
+    return unwrapData<Caregiver>(response.data);
+  },
 };
 
 export const adminHospitalsService = {
@@ -159,6 +179,8 @@ export const adminHospitalsService = {
     appendIfPresent(formData, 'district', data.district);
     appendIfPresent(formData, 'type', data.type);
     appendIfPresent(formData, 'details', data.details);
+    appendIfPresent(formData, 'location_lat', data.location_lat);
+    appendIfPresent(formData, 'location_long', data.location_long);
     appendIfPresent(formData, 'photo', data.photo);
 
     const response = await apiClient.post<AdminApiResponse<Hospital>>(`${ADMIN_BASE}/hospitals`, formData);
@@ -175,6 +197,8 @@ export const adminHospitalsService = {
     appendIfPresent(formData, 'district', data.district);
     appendIfPresent(formData, 'type', data.type);
     appendIfPresent(formData, 'details', data.details);
+    appendIfPresent(formData, 'location_lat', data.location_lat);
+    appendIfPresent(formData, 'location_long', data.location_long);
     appendIfPresent(formData, 'is_active', data.is_active);
     appendIfPresent(formData, 'photo', data.photo);
 
@@ -259,5 +283,35 @@ export const adminAuditLogsService = {
   getAuditLogs: async (params?: AuditLogsQueryParams): Promise<AuditLogsResponse> => {
     const response = await apiClient.get<AdminApiResponse<AuditLog[]>>(`${ADMIN_BASE}/audit-logs`, { params });
     return listResponse<AuditLog>(response.data);
+  },
+};
+
+export const adminSafetyIncidentsService = {
+  getSafetyIncidents: async (params?: SafetyIncidentsQueryParams): Promise<SafetyIncidentsResponse> => {
+    const response = await apiClient.get<AdminApiResponse<SafetyIncident[]>>(
+      `${ADMIN_BASE}/safety-incidents`,
+      { params }
+    );
+    return listResponse<SafetyIncident>(response.data);
+  },
+
+  updateSafetyIncident: async (id: string, body: SafetyIncidentUpdatePayload): Promise<SafetyIncident> => {
+    const response = await apiClient.patch<AdminApiResponse<SafetyIncident>>(
+      `${ADMIN_BASE}/safety-incidents/${id}`,
+      body
+    );
+    return unwrapData<SafetyIncident>(response.data);
+  },
+};
+
+export const adminPrivacyPoliciesService = {
+  getPrivacyPolicies: async (): Promise<PrivacyPolicy[]> => {
+    const response = await apiClient.get<AdminApiResponse<PrivacyPolicy[]>>(`${ADMIN_BASE}/privacy-policies`);
+    return asList<PrivacyPolicy>(unwrapEnvelope<PrivacyPolicy[]>(response.data).data);
+  },
+
+  upsertPrivacyPolicy: async (body: PrivacyPolicyUpsertPayload): Promise<PrivacyPolicy> => {
+    const response = await apiClient.put<AdminApiResponse<PrivacyPolicy>>(`${ADMIN_BASE}/privacy-policies`, body);
+    return unwrapData<PrivacyPolicy>(response.data);
   },
 };

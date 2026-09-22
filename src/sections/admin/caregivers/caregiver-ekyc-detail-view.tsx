@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CircularProgress from '@mui/material/CircularProgress';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -19,9 +20,21 @@ import { StatusBadge } from 'src/components/status-badge';
 import { LucideIcon } from 'src/components/lucide-icons';
 import { useSnackbar } from 'src/components/snackbar';
 import { adminCaregiversService } from 'src/api/admin-services';
-import type { CaregiverEkycDetail, CaregiverEkycFeatureItem } from 'src/api/admin-types';
+import type {
+  CaregiverEkycDetail,
+  CaregiverEkycFeatureItem,
+  CredentialStatus,
+} from 'src/api/admin-types';
 import { getErrorMessage } from 'src/lib/utils';
 import { fDateTime } from 'src/utils/format-time';
+
+const CREDENTIAL_STATUSES: CredentialStatus[] = [
+  'VERIFIED',
+  'REJECTED',
+  'PENDING',
+  'SUSPENDED',
+  'REVERIFY_REQUIRED',
+];
 
 function FeatureList({
   title,
@@ -69,6 +82,9 @@ export function CaregiverEkycDetailView() {
   const queryClient = useQueryClient();
   const [action, setAction] = useState<'approve' | 'decline' | null>(null);
   const [comment, setComment] = useState('');
+  const [credentialStatus, setCredentialStatus] = useState<CredentialStatus>('VERIFIED');
+  const [credentialNote, setCredentialNote] = useState('');
+  const [credentialExpiresAt, setCredentialExpiresAt] = useState('');
 
   const query = useQuery({
     queryKey: ['admin-caregiver-ekyc', id],
@@ -78,6 +94,12 @@ export function CaregiverEkycDetailView() {
 
   const detail = query.data as CaregiverEkycDetail | undefined;
   const decision = detail?.decision;
+
+  useEffect(() => {
+    if (!detail) return;
+    if (window.location.hash !== '#credentials') return;
+    document.getElementById('credentials')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [detail]);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -94,6 +116,22 @@ export function CaregiverEkycDetailView() {
       queryClient.invalidateQueries({ queryKey: ['admin-caregiver-ekyc', id] });
       queryClient.invalidateQueries({ queryKey: ['admin-caregivers'] });
       query.refetch();
+    },
+    onError: (error) => showSnackbar(getErrorMessage(error), 'error'),
+  });
+
+  const credentialsMutation = useMutation({
+    mutationFn: () =>
+      adminCaregiversService.reviewCredentials(id, {
+        credential_status: credentialStatus,
+        ...(credentialNote.trim() ? { note: credentialNote.trim() } : {}),
+        ...(credentialExpiresAt.trim()
+          ? { credential_expires_at: credentialExpiresAt.trim() }
+          : {}),
+      }),
+    onSuccess: () => {
+      showSnackbar('Credentials reviewed', 'success');
+      queryClient.invalidateQueries({ queryKey: ['admin-caregivers'] });
     },
     onError: (error) => showSnackbar(getErrorMessage(error), 'error'),
   });
@@ -207,6 +245,58 @@ export function CaregiverEkycDetailView() {
         <FeatureList title="Face matches" items={decision?.face_matches} />
         <FeatureList title="Reviews" items={decision?.reviews} />
       </Box>
+
+      <Card
+        id="credentials"
+        sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}
+      >
+        <Typography variant="h6" sx={{ mb: 1 }}>
+          Professional credentials
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+          Manual review of BNMC / professional credentials (separate from Didit eKYC).
+        </Typography>
+        <Stack spacing={2}>
+          <TextField
+            select
+            label="Credential status"
+            value={credentialStatus}
+            onChange={(event) => setCredentialStatus(event.target.value as CredentialStatus)}
+          >
+            {CREDENTIAL_STATUSES.map((value) => (
+              <MenuItem key={value} value={value}>
+                {value.replace(/_/g, ' ')}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            label="Note (optional)"
+            value={credentialNote}
+            onChange={(event) => setCredentialNote(event.target.value)}
+            multiline
+            minRows={2}
+            placeholder="BNMC card checked"
+          />
+          <TextField
+            label="Expires at (optional)"
+            type="date"
+            value={credentialExpiresAt}
+            onChange={(event) => setCredentialExpiresAt(event.target.value)}
+            InputLabelProps={{ shrink: true }}
+            sx={{ maxWidth: 280 }}
+          />
+          <Stack direction="row" justifyContent="flex-end">
+            <Button
+              variant="contained"
+              disabled={credentialsMutation.isPending}
+              startIcon={credentialsMutation.isPending ? <CircularProgress size={16} /> : null}
+              onClick={() => credentialsMutation.mutate()}
+            >
+              Save credentials review
+            </Button>
+          </Stack>
+        </Stack>
+      </Card>
 
       {!detail.can_approve && !detail.can_decline && (
         <Card sx={{ p: 2.5, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>

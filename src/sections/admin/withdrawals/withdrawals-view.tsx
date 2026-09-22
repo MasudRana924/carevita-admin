@@ -17,7 +17,7 @@ export function WithdrawalsView() {
         {
           id: 'status',
           label: 'Status',
-          options: ['PENDING', 'APPROVED', 'REJECTED', 'COMPLETED'].map((value) => ({
+          options: ['PENDING', 'PROCESSING', 'COMPLETED', 'REJECTED', 'APPROVED'].map((value) => ({
             value,
             label: value,
           })),
@@ -49,7 +49,7 @@ export function WithdrawalsView() {
           label: 'Approve',
           icon: 'eva:checkmark-fill',
           color: 'success',
-          hidden: (row) => !['PENDING', 'pending'].includes(String(row.status || '')),
+          hidden: (row) => !['PENDING', 'PROCESSING', 'pending', 'processing'].includes(String(row.status || '')),
           onClick: (row) =>
             confirm(row, {
               title: 'Approve withdrawal',
@@ -65,7 +65,7 @@ export function WithdrawalsView() {
           label: 'Reject',
           icon: 'eva:close-fill',
           color: 'error',
-          hidden: (row) => !['PENDING', 'pending'].includes(String(row.status || '')),
+          hidden: (row) => !['PENDING', 'PROCESSING', 'pending', 'processing'].includes(String(row.status || '')),
           onClick: (row) =>
             confirm(row, {
               title: 'Reject withdrawal',

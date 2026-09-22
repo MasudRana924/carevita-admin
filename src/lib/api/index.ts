@@ -16,6 +16,10 @@ export const caregiversApi = {
     apiSend('post', `/admin/caregivers/${id}/ekyc/approve`, body?.comment ? { comment: body.comment } : {}),
   declineEkyc: (id: string, body?: { comment?: string }) =>
     apiSend('post', `/admin/caregivers/${id}/ekyc/decline`, body?.comment ? { comment: body.comment } : {}),
+  reviewCredentials: (
+    id: string,
+    body: { credential_status: string; note?: string; credential_expires_at?: string }
+  ) => apiSend('post', `/admin/caregivers/${id}/credentials`, body),
 };
 
 export const dashboardApi = {
@@ -51,6 +55,18 @@ export const withdrawalsApi = {
 
 export const auditLogsApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/audit-logs', params),
+};
+
+export const safetyIncidentsApi = {
+  list: (params?: Record<string, string | number | boolean | undefined>) =>
+    apiList('/admin/safety-incidents', params),
+  update: (id: string, body: Record<string, unknown>) =>
+    apiSend('patch', `/admin/safety-incidents/${id}`, body),
+};
+
+export const privacyPoliciesApi = {
+  list: () => apiGet<Record<string, unknown>[]>('/admin/privacy-policies'),
+  upsert: (body: Record<string, unknown>) => apiSend('put', '/admin/privacy-policies', body),
 };
 
 export const bkashApi = {

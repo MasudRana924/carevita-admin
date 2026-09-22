@@ -32,6 +32,8 @@ export function NewHospitalView() {
     district: '',
     type: '',
     details: '',
+    location_lat: '',
+    location_long: '',
   });
 
   const [photo, setPhoto] = useState<File | null>(null);
@@ -64,6 +66,8 @@ export function NewHospitalView() {
         district: formData.district,
         type: formData.type,
         details: formData.details,
+        location_lat: formData.location_lat || undefined,
+        location_long: formData.location_long || undefined,
         photo: photo || undefined,
       });
       showSnackbar('Hospital created successfully', 'success');
@@ -77,6 +81,8 @@ export function NewHospitalView() {
         district: '',
         type: '',
         details: '',
+        location_lat: '',
+        location_long: '',
       });
       setPhoto(null);
     } catch (error: any) {
@@ -158,6 +164,21 @@ export function NewHospitalView() {
                 placeholder="e.g., Private, Government, etc."
               />
 
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+                <TextField
+                  fullWidth
+                  label="Latitude"
+                  value={formData.location_lat}
+                  onChange={handleInputChange('location_lat')}
+                />
+                <TextField
+                  fullWidth
+                  label="Longitude"
+                  value={formData.location_long}
+                  onChange={handleInputChange('location_long')}
+                />
+              </Stack>
+
               <TextField
                 fullWidth
                 label="Details"
@@ -208,6 +229,8 @@ export function NewHospitalView() {
                       district: '',
                       type: '',
                       details: '',
+                      location_lat: '',
+                      location_long: '',
                     });
                     setPhoto(null);
                   }}

@@ -1,12 +1,14 @@
 import type { ReactNode } from 'react';
 import {
   ClipboardList,
+  FileText,
   Handshake,
   Hospital,
   LayoutDashboard,
   Scale,
   ScrollText,
   Settings,
+  ShieldAlert,
   UserRound,
   Users,
   Wallet,
@@ -44,12 +46,14 @@ export const navGroups: NavGroup[] = [
     items: [
       { title: 'Disputes', path: '/disputes', icon: <Scale style={iconSx} /> },
       { title: 'Withdrawals', path: '/withdrawals', icon: <Wallet style={iconSx} /> },
+      { title: 'Safety incidents', path: '/safety-incidents', icon: <ShieldAlert style={iconSx} /> },
       { title: 'Audit log', path: '/audit-logs', icon: <ScrollText style={iconSx} /> },
     ],
   },
   {
     subheader: 'System',
     items: [
+      { title: 'Privacy policies', path: '/privacy-policies', icon: <FileText style={iconSx} /> },
       { title: 'Admin Profile', path: '/profile', icon: <UserRound style={iconSx} /> },
       { title: 'Settings', path: '/settings', icon: <Settings style={iconSx} /> },
     ],

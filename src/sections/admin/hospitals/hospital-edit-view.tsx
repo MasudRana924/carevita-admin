@@ -31,6 +31,8 @@ export function HospitalEditView() {
     district: '',
     type: '',
     details: '',
+    location_lat: '',
+    location_long: '',
   });
   const [photo, setPhoto] = useState<File | undefined>();
 
@@ -59,6 +61,14 @@ export function HospitalEditView() {
       district: pickString(query.data, ['district'], '') === '—' ? '' : pickString(query.data, ['district'], ''),
       type: pickString(query.data, ['type'], '') === '—' ? '' : pickString(query.data, ['type'], ''),
       details: pickString(query.data, ['details'], '') === '—' ? '' : pickString(query.data, ['details'], ''),
+      location_lat:
+        pickString(query.data, ['location_lat'], '') === '—'
+          ? ''
+          : pickString(query.data, ['location_lat'], ''),
+      location_long:
+        pickString(query.data, ['location_long'], '') === '—'
+          ? ''
+          : pickString(query.data, ['location_long'], ''),
     });
   }, [query.data]);
 
@@ -104,6 +114,8 @@ export function HospitalEditView() {
                   city: 'City',
                   district: 'District',
                   type: 'Type',
+                  location_lat: 'Latitude',
+                  location_long: 'Longitude',
                   details: 'Details',
                 }).map(([key, label]) => (
                   <TextField

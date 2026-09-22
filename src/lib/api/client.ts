@@ -42,7 +42,10 @@ apiClient.interceptors.response.use(
     const envelopeCode = unwrapData(error.response?.data).code;
     const rawCode = (error.response?.data as { code?: string } | undefined)?.code;
     const url = original?.url || '';
-    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/refresh-token');
+    const isAuthEndpoint =
+      url.includes('/auth/login') ||
+      url.includes('/auth/refresh-token') ||
+      url.includes('/auth/logout');
     const shouldRefresh =
       status === 401 || isAuthErrorCode(envelopeCode) || isAuthErrorCode(rawCode);
 
