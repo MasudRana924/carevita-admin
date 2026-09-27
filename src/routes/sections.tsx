@@ -38,6 +38,12 @@ const AuditLogsView = lazy(() => import('src/sections/admin/audit-logs').then((m
 const UserDetailView = lazy(() => import('src/sections/admin/detail-views').then((m) => ({ default: m.UserDetailView })));
 const ProfileView = lazy(() => import('src/sections/admin/profile').then((m) => ({ default: m.ProfileView })));
 const SettingsView = lazy(() => import('src/sections/admin/settings').then((m) => ({ default: m.SettingsView })));
+const ConversationsView = lazy(() =>
+  import('src/sections/admin/conversations').then((m) => ({ default: m.ConversationsView }))
+);
+const ConversationDetailView = lazy(() =>
+  import('src/sections/admin/conversations').then((m) => ({ default: m.ConversationDetailView }))
+);
 
 const renderFallback = () => (
   <Box sx={{ display: 'flex', flex: '1 1 auto', alignItems: 'center', justifyContent: 'center' }}>
@@ -107,6 +113,8 @@ export const routesSection: RouteObject[] = [
       { path: 'safety-incidents', element: <SafetyIncidentsView /> },
       { path: 'privacy-policies', element: <PrivacyPoliciesView /> },
       { path: 'audit-logs', element: <AuditLogsView /> },
+      { path: 'conversations', element: <ConversationsView /> },
+      { path: 'conversations/:id', element: <ConversationDetailView /> },
       { path: 'profile', element: <ProfileView /> },
       { path: 'settings', element: <SettingsView /> },
     ],

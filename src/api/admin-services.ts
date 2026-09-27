@@ -43,6 +43,14 @@ import type {
   SafetyIncidentUpdatePayload,
   PrivacyPolicy,
   PrivacyPolicyUpsertPayload,
+  Conversation,
+  ConversationsQueryParams,
+  ConversationsResponse,
+  Message,
+  MessagesQueryParams,
+  MessagesResponse,
+  ReplyPayload,
+  ConversationStatusUpdate,
 } from './admin-types';
 
 const ADMIN_BASE = '/admin';
@@ -313,5 +321,37 @@ export const adminPrivacyPoliciesService = {
   upsertPrivacyPolicy: async (body: PrivacyPolicyUpsertPayload): Promise<PrivacyPolicy> => {
     const response = await apiClient.put<AdminApiResponse<PrivacyPolicy>>(`${ADMIN_BASE}/privacy-policies`, body);
     return unwrapData<PrivacyPolicy>(response.data);
+  },
+};
+
+export const adminConversationsService = {
+  getConversations: async (params?: ConversationsQueryParams): Promise<ConversationsResponse> => {
+    const response = await apiClient.get<AdminApiResponse<Conversation[]>>(`${ADMIN_BASE}/conversations`, { params });
+    return listResponse<Conversation>(response.data);
+  },
+
+  getConversation: async (id: string): Promise<Conversation> => {
+    const response = await apiClient.get<AdminApiResponse<Conversation>>(`${ADMIN_BASE}/conversations/${id}`);
+    return unwrapData<Conversation>(response.data);
+  },
+
+  getMessages: async (id: string, params?: MessagesQueryParams): Promise<MessagesResponse> => {
+    const response = await apiClient.get<AdminApiResponse<Message[]>>(`${ADMIN_BASE}/conversations/${id}/messages`, { params });
+    return listResponse<Message>(response.data);
+  },
+
+  reply: async (id: string, body: ReplyPayload): Promise<Message> => {
+    const response = await apiClient.post<AdminApiResponse<Message>>(`${ADMIN_BASE}/conversations/${id}/reply`, body);
+    return unwrapData<Message>(response.data);
+  },
+
+  updateStatus: async (id: string, body: ConversationStatusUpdate): Promise<Conversation> => {
+    const response = await apiClient.put<AdminApiResponse<Conversation>>(`${ADMIN_BASE}/conversations/${id}/status`, body);
+    return unwrapData<Conversation>(response.data);
+  },
+
+  markAsRead: async (id: string): Promise<Message[]> => {
+    const response = await apiClient.put<AdminApiResponse<Message[]>>(`${ADMIN_BASE}/conversations/${id}/read`);
+    return asList<Message>(unwrapEnvelope<Message[]>(response.data).data);
   },
 };

@@ -447,3 +447,69 @@ export interface PrivacyPolicyUpsertPayload {
   version?: string;
   is_published?: boolean;
 }
+
+// Conversation types
+export type ConversationStatus = 'active' | 'closed' | 'archived';
+
+export type MessageType = 'text' | 'image' | 'document' | 'audio';
+
+export interface Conversation {
+  id: string;
+  user_id: string;
+  user_name: string;
+  user_phone: string;
+  user_email: string;
+  subject: string;
+  status: ConversationStatus;
+  user_unread_count: number;
+  admin_unread_count: number;
+  last_message_at: string;
+  last_message_preview: string;
+  message_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConversationsQueryParams {
+  status?: ConversationStatus;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface ConversationsResponse {
+  data: Conversation[];
+  meta: PaginationMeta;
+}
+
+export interface Message {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  sender_role: 'user' | 'admin';
+  message: string;
+  message_type: MessageType;
+  is_read: boolean;
+  read_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MessagesQueryParams {
+  page?: number;
+  limit?: number;
+}
+
+export interface MessagesResponse {
+  data: Message[];
+  meta: PaginationMeta;
+}
+
+export interface ReplyPayload {
+  message_type: MessageType;
+  message: string;
+}
+
+export interface ConversationStatusUpdate {
+  status: ConversationStatus;
+}

@@ -5,6 +5,7 @@ import {
   Handshake,
   Hospital,
   LayoutDashboard,
+  MessageSquare,
   Scale,
   ScrollText,
   Settings,
@@ -44,6 +45,7 @@ export const navGroups: NavGroup[] = [
   {
     subheader: 'Operations',
     items: [
+      { title: 'Conversations', path: '/conversations', icon: <MessageSquare style={iconSx} /> },
       { title: 'Disputes', path: '/disputes', icon: <Scale style={iconSx} /> },
       { title: 'Withdrawals', path: '/withdrawals', icon: <Wallet style={iconSx} /> },
       { title: 'Safety incidents', path: '/safety-incidents', icon: <ShieldAlert style={iconSx} /> },
