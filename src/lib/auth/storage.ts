@@ -1,6 +1,6 @@
-export const ACCESS_TOKEN_KEY = 'caremate_access_token';
-export const REFRESH_TOKEN_KEY = 'caremate_refresh_token';
-export const USER_KEY = 'caremate_user';
+export const ACCESS_TOKEN_KEY = 'Nirapod_access_token';
+export const REFRESH_TOKEN_KEY = 'Nirapod_refresh_token';
+export const USER_KEY = 'Nirapod_user';
 
 export type StoredUser = {
   id: string;

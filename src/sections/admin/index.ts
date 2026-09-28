@@ -3,4 +3,4 @@ export * from './hospitals';
 export * from './caregivers';
 export * from './settings';
 export * from './profile';
-export * from './conversations';
+export * from './support-chat';

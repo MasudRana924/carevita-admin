@@ -14,6 +14,7 @@ import { RouterLink } from 'src/routes/components';
 
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
+import { useUnreadSummary } from 'src/sections/admin/support-chat/use-unread-summary';
 
 import type { NavGroup, NavItem } from '../nav-config-dashboard';
 
@@ -96,12 +97,17 @@ function NavContent({
   onItemClick,
 }: NavContentProps & { onItemClick?: () => void }) {
   const pathname = usePathname();
+  const { data: unreadSummary } = useUnreadSummary();
+
+  const badges: Record<NonNullable<NavItem['badge']>, number> = {
+    supportChatUnread: unreadSummary?.unread_conversations ?? 0,
+  };
 
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1, mb: 2 }}>
         <Logo href="/dashboard" />
-        <Typography variant="subtitle1">CareMate</Typography>
+        <Typography variant="subtitle1">Nirapod</Typography>
       </Box>
 
       {slots?.topArea}
@@ -132,6 +138,7 @@ function NavContent({
                   <NavLink
                     key={`${group.subheader}-${item.title}-${item.path}`}
                     item={item}
+                    badgeCount={item.badge ? badges[item.badge] : 0}
                     active={pathname === item.path || pathname.startsWith(`${item.path}/`)}
                     onClick={onItemClick}
                   />
@@ -150,10 +157,12 @@ function NavContent({
 function NavLink({
   item,
   active,
+  badgeCount = 0,
   onClick,
 }: {
   item: NavItem;
   active: boolean;
+  badgeCount?: number;
   onClick?: () => void;
 }) {
   return (
@@ -177,10 +186,11 @@ function NavLink({
             minHeight: 40,
             ...(active && {
               fontWeight: 'fontWeightSemiBold',
-              color: theme.vars.palette.primary.main,
-              bgcolor: varAlpha(theme.vars.palette.primary.mainChannel, 0.08),
+              color: '#fff',
+              bgcolor: '#008178',
               '&:hover': {
-                bgcolor: varAlpha(theme.vars.palette.primary.mainChannel, 0.16),
+                bgcolor: '#006d68',
+                color: '#fff',
               },
             }),
           }),
@@ -192,6 +202,25 @@ function NavLink({
         <Box component="span" sx={{ flexGrow: 1 }}>
           {item.title}
         </Box>
+        {badgeCount > 0 && (
+          <Box
+            component="span"
+            sx={{
+              px: 0.75,
+              minWidth: 20,
+              height: 20,
+              lineHeight: '20px',
+              textAlign: 'center',
+              borderRadius: 10,
+              fontSize: 12,
+              fontWeight: 700,
+              bgcolor: 'error.main',
+              color: 'common.white',
+            }}
+          >
+            {badgeCount > 99 ? '99+' : badgeCount}
+          </Box>
+        )}
       </ListItemButton>
     </ListItem>
   );

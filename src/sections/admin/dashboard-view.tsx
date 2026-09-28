@@ -118,7 +118,7 @@ export default function DashboardView() {
 
   return (
     <DashboardContent>
-      <PageHeader title="Dashboard" description="CareMate healthcare administration overview" />
+      <PageHeader title="Dashboard" description="Nirapod healthcare administration overview" />
 
       {isDashboardLoading ? (
         <DashboardKpiSkeleton />

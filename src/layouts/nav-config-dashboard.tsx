@@ -19,6 +19,7 @@ export type NavItem = {
   title: string;
   path: string;
   icon: ReactNode;
+  badge?: 'supportChatUnread';
 };
 
 export type NavGroup = {
@@ -45,7 +46,12 @@ export const navGroups: NavGroup[] = [
   {
     subheader: 'Operations',
     items: [
-      { title: 'Conversations', path: '/conversations', icon: <MessageSquare style={iconSx} /> },
+      {
+        title: 'Support Chat',
+        path: '/support-chat',
+        icon: <MessageSquare style={iconSx} />,
+        badge: 'supportChatUnread',
+      },
       { title: 'Disputes', path: '/disputes', icon: <Scale style={iconSx} /> },
       { title: 'Withdrawals', path: '/withdrawals', icon: <Wallet style={iconSx} /> },
       { title: 'Safety incidents', path: '/safety-incidents', icon: <ShieldAlert style={iconSx} /> },

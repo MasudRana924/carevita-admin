@@ -19,6 +19,19 @@ export default defineConfig({
       },
     ],
   },
+  optimizeDeps: {
+    include: [
+      '@mui/material/Tab',
+      '@mui/material/Tabs',
+      '@mui/material/Badge',
+      '@mui/material/Dialog',
+      '@mui/material/Tooltip',
+      '@mui/material/InputAdornment',
+      '@mui/material/LinearProgress',
+      '@mui/material/CircularProgress',
+      '@mui/material/ListItemButton',
+    ],
+  },
   server: { port: PORT, host: true },
   preview: { port: PORT, host: true },
 });

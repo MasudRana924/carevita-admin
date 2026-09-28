@@ -214,7 +214,7 @@ export function CaregiverEkycDetailView() {
         <InfoCard title="Actions">
           <Stack spacing={1.5}>
             <Typography variant="body2" color="text.secondary">
-              Approve / Decline updates Didit as the source of truth, then syncs CareMate. Use these
+              Approve / Decline updates Didit as the source of truth, then syncs Nirapod. Use these
               only when the session is reviewable.
             </Typography>
             <Stack direction="row" spacing={1}>
@@ -314,8 +314,8 @@ export function CaregiverEkycDetailView() {
           <Stack spacing={2} sx={{ pt: 1 }}>
             <Typography>
               {action === 'approve'
-                ? 'Approve this Didit session? The caregiver will be marked verified in CareMate.'
-                : 'Decline this Didit session? The caregiver will be marked declined in CareMate.'}
+                ? 'Approve this Didit session? The caregiver will be marked verified in Nirapod.'
+                : 'Decline this Didit session? The caregiver will be marked declined in Nirapod.'}
             </Typography>
             <TextField
               fullWidth

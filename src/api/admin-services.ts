@@ -46,10 +46,13 @@ import type {
   Conversation,
   ConversationsQueryParams,
   ConversationsResponse,
+  ConversationUnreadSummary,
   Message,
   MessagesQueryParams,
   MessagesResponse,
-  ReplyPayload,
+  SendMessagePayload,
+  SendMessageResponse,
+  MarkReadResponse,
   ConversationStatusUpdate,
 } from './admin-types';
 
@@ -326,8 +329,30 @@ export const adminPrivacyPoliciesService = {
 
 export const adminConversationsService = {
   getConversations: async (params?: ConversationsQueryParams): Promise<ConversationsResponse> => {
-    const response = await apiClient.get<AdminApiResponse<Conversation[]>>(`${ADMIN_BASE}/conversations`, { params });
+    const query: Record<string, unknown> = { ...params };
+    if (!params?.unread_only) delete query.unread_only;
+    if (!params?.search) delete query.search;
+    if (!params?.status) delete query.status;
+    const response = await apiClient.get<AdminApiResponse<Conversation[]>>(`${ADMIN_BASE}/conversations`, {
+      params: query,
+    });
     return listResponse<Conversation>(response.data);
+  },
+
+  getUnreadSummary: async (): Promise<ConversationUnreadSummary> => {
+    const response = await apiClient.get<AdminApiResponse<ConversationUnreadSummary>>(
+      `${ADMIN_BASE}/conversations/unread-summary`
+    );
+    const data = unwrapData<Partial<ConversationUnreadSummary> | null>(response.data) || {};
+    return {
+      unread_messages: Number(data.unread_messages) || 0,
+      unread_conversations: Number(data.unread_conversations) || 0,
+    };
+  },
+
+  getConversationByUser: async (userId: string): Promise<Conversation> => {
+    const response = await apiClient.get<AdminApiResponse<Conversation>>(`${ADMIN_BASE}/conversations/user/${userId}`);
+    return unwrapData<Conversation>(response.data);
   },
 
   getConversation: async (id: string): Promise<Conversation> => {
@@ -336,13 +361,49 @@ export const adminConversationsService = {
   },
 
   getMessages: async (id: string, params?: MessagesQueryParams): Promise<MessagesResponse> => {
-    const response = await apiClient.get<AdminApiResponse<Message[]>>(`${ADMIN_BASE}/conversations/${id}/messages`, { params });
-    return listResponse<Message>(response.data);
+    const response = await apiClient.get<AdminApiResponse<Message[]>>(`${ADMIN_BASE}/conversations/${id}/messages`, {
+      params,
+    });
+    const envelope = unwrapEnvelope<Message[]>(response.data);
+    return {
+      data: Array.isArray(envelope.data) ? envelope.data : [],
+      has_more: Boolean(envelope.meta?.has_more),
+    };
   },
 
-  reply: async (id: string, body: ReplyPayload): Promise<Message> => {
-    const response = await apiClient.post<AdminApiResponse<Message>>(`${ADMIN_BASE}/conversations/${id}/reply`, body);
-    return unwrapData<Message>(response.data);
+  sendMessage: async (
+    id: string,
+    body: SendMessagePayload,
+    onUploadProgress?: (percent: number) => void
+  ): Promise<SendMessageResponse> => {
+    let payload: FormData | { message?: string; client_message_id?: string };
+    if (body.file) {
+      const formData = new FormData();
+      formData.append('file', body.file);
+      appendIfPresent(formData, 'message', body.message);
+      appendIfPresent(formData, 'client_message_id', body.client_message_id);
+      payload = formData;
+    } else {
+      payload = { message: body.message, client_message_id: body.client_message_id };
+    }
+
+    const response = await apiClient.post<AdminApiResponse<Message>>(
+      `${ADMIN_BASE}/conversations/${id}/messages`,
+      payload,
+      {
+        timeout: body.file ? 120000 : undefined,
+        onUploadProgress: onUploadProgress
+          ? (event) => {
+              if (event.total) onUploadProgress(Math.round((event.loaded / event.total) * 100));
+            }
+          : undefined,
+      }
+    );
+    const envelope = unwrapEnvelope<Message>(response.data);
+    return {
+      message: envelope.data,
+      conversation: (envelope.meta?.conversation as Conversation | undefined) ?? null,
+    };
   },
 
   updateStatus: async (id: string, body: ConversationStatusUpdate): Promise<Conversation> => {
@@ -350,8 +411,9 @@ export const adminConversationsService = {
     return unwrapData<Conversation>(response.data);
   },
 
-  markAsRead: async (id: string): Promise<Message[]> => {
-    const response = await apiClient.put<AdminApiResponse<Message[]>>(`${ADMIN_BASE}/conversations/${id}/read`);
-    return asList<Message>(unwrapEnvelope<Message[]>(response.data).data);
+  markAsRead: async (id: string): Promise<MarkReadResponse> => {
+    const response = await apiClient.put<AdminApiResponse<MarkReadResponse>>(`${ADMIN_BASE}/conversations/${id}/read`);
+    const data = unwrapData<Partial<MarkReadResponse> | null>(response.data) || {};
+    return { marked: Number(data.marked) || 0, conversation: data.conversation ?? null };
   },
 };

@@ -1,7 +1,7 @@
 import type { RouteObject } from 'react-router';
 
 import { lazy, Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useParams } from 'react-router-dom';
 import { varAlpha } from 'minimal-shared/utils';
 
 import Box from '@mui/material/Box';
@@ -38,12 +38,14 @@ const AuditLogsView = lazy(() => import('src/sections/admin/audit-logs').then((m
 const UserDetailView = lazy(() => import('src/sections/admin/detail-views').then((m) => ({ default: m.UserDetailView })));
 const ProfileView = lazy(() => import('src/sections/admin/profile').then((m) => ({ default: m.ProfileView })));
 const SettingsView = lazy(() => import('src/sections/admin/settings').then((m) => ({ default: m.SettingsView })));
-const ConversationsView = lazy(() =>
-  import('src/sections/admin/conversations').then((m) => ({ default: m.ConversationsView }))
+const SupportChatView = lazy(() =>
+  import('src/sections/admin/support-chat').then((m) => ({ default: m.SupportChatView }))
 );
-const ConversationDetailView = lazy(() =>
-  import('src/sections/admin/conversations').then((m) => ({ default: m.ConversationDetailView }))
-);
+
+function LegacyConversationRedirect() {
+  const { id } = useParams();
+  return <Navigate to={id ? `/support-chat/${id}` : '/support-chat'} replace />;
+}
 
 const renderFallback = () => (
   <Box sx={{ display: 'flex', flex: '1 1 auto', alignItems: 'center', justifyContent: 'center' }}>
@@ -113,8 +115,10 @@ export const routesSection: RouteObject[] = [
       { path: 'safety-incidents', element: <SafetyIncidentsView /> },
       { path: 'privacy-policies', element: <PrivacyPoliciesView /> },
       { path: 'audit-logs', element: <AuditLogsView /> },
-      { path: 'conversations', element: <ConversationsView /> },
-      { path: 'conversations/:id', element: <ConversationDetailView /> },
+      { path: 'support-chat', element: <SupportChatView /> },
+      { path: 'support-chat/:conversationId', element: <SupportChatView /> },
+      { path: 'conversations', element: <LegacyConversationRedirect /> },
+      { path: 'conversations/:id', element: <LegacyConversationRedirect /> },
       { path: 'profile', element: <ProfileView /> },
       { path: 'settings', element: <SettingsView /> },
     ],

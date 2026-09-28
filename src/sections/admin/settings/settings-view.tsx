@@ -143,14 +143,14 @@ export function SettingsView() {
               <TextField
                 fullWidth
                 label="Application Name"
-                defaultValue="CareMate Admin"
+                defaultValue="Nirapod Admin"
                 helperText="The name displayed in the application"
               />
               
               <TextField
                 fullWidth
                 label="Support Email"
-                defaultValue="support@caremate.com"
+                defaultValue="support@Nirapod.com"
                 helperText="Email address for user support"
               />
 

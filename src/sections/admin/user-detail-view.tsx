@@ -10,6 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import { MessageSquare } from 'lucide-react';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { PageHeader } from 'src/components/page-header';
@@ -19,6 +20,7 @@ import { StatusBadge } from 'src/components/status-badge';
 import { LucideIcon } from 'src/components/lucide-icons';
 import { useSnackbar } from 'src/components/snackbar';
 import { usersApi } from 'src/lib/api';
+import { adminConversationsService } from 'src/api/admin-services';
 import { getErrorMessage, getRecordId, pickString } from 'src/lib/utils';
 import { fDateTime } from 'src/utils/format-time';
 
@@ -91,6 +93,12 @@ export function UserDetailView() {
     onError: (error) => showSnackbar(getErrorMessage(error), 'error'),
   });
 
+  const messageUser = useMutation({
+    mutationFn: () => adminConversationsService.getConversationByUser(id),
+    onSuccess: (conversation) => navigate(`/support-chat/${conversation.id}`),
+    onError: (error) => showSnackbar(getErrorMessage(error, 'Failed to open conversation'), 'error'),
+  });
+
   const name = pickString(user, ['name', 'full_name'], 'User details');
   const email = pickString(user, ['email'], '');
   const phone = pickString(user, ['phone'], '');
@@ -144,13 +152,23 @@ export function UserDetailView() {
                     </Button>
                   </>
                 ) : (
-                  <Button
-                    variant="contained"
-                    startIcon={<LucideIcon icon="solar:pen-bold" />}
-                    onClick={() => navigate(`/users/${id}?edit=1`)}
-                  >
-                    Edit
-                  </Button>
+                  <>
+                    <Button
+                      variant="outlined"
+                      startIcon={<MessageSquare size={18} />}
+                      disabled={messageUser.isPending}
+                      onClick={() => messageUser.mutate()}
+                    >
+                      {messageUser.isPending ? 'Opening...' : 'Message user'}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      startIcon={<LucideIcon icon="solar:pen-bold" />}
+                      onClick={() => navigate(`/users/${id}?edit=1`)}
+                    >
+                      Edit
+                    </Button>
+                  </>
                 )}
               </Stack>
             }

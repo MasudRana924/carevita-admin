@@ -86,7 +86,7 @@ export function SignInView() {
           <Box sx={{ gap: 1.5, display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 5 }}>
             <Typography variant="h4">Admin sign in</Typography>
             <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
-              Sign in with your CareMate admin email.
+              Sign in with your Nirapod admin email.
             </Typography>
           </Box>
 

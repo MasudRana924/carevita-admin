@@ -448,33 +448,35 @@ export interface PrivacyPolicyUpsertPayload {
   is_published?: boolean;
 }
 
-// Conversation types
+// Support chat types (one conversation per user)
 export type ConversationStatus = 'active' | 'closed' | 'archived';
 
-export type MessageType = 'text' | 'image' | 'document' | 'audio';
+export type MessageType = 'text' | 'image' | 'document';
+
+export type MessageSenderRole = 'user' | 'admin';
 
 export interface Conversation {
   id: string;
   user_id: string;
-  user_name: string;
-  user_phone: string;
-  user_email: string;
-  subject: string;
+  user_name: string | null;
+  user_phone: string | null;
+  user_email: string | null;
+  user_photo: string | null;
+  user_role: string | null;
   status: ConversationStatus;
-  user_unread_count: number;
   admin_unread_count: number;
-  last_message_at: string;
-  last_message_preview: string;
-  message_count: number;
-  created_at: string;
-  updated_at: string;
+  user_unread_count: number;
+  last_message_at: string | null;
+  last_message_preview: string | null;
+  last_message_sender_role: MessageSenderRole | null;
 }
 
 export interface ConversationsQueryParams {
-  status?: ConversationStatus;
-  search?: string;
   page?: number;
   limit?: number;
+  search?: string;
+  unread_only?: boolean;
+  status?: ConversationStatus;
 }
 
 export interface ConversationsResponse {
@@ -482,32 +484,55 @@ export interface ConversationsResponse {
   meta: PaginationMeta;
 }
 
+export interface ConversationUnreadSummary {
+  unread_messages: number;
+  unread_conversations: number;
+}
+
 export interface Message {
   id: string;
   conversation_id: string;
   sender_id: string;
-  sender_role: 'user' | 'admin';
-  message: string;
+  sender_role: MessageSenderRole;
+  sender_name: string | null;
+  sender_photo: string | null;
   message_type: MessageType;
+  message: string | null;
+  attachment_url: string | null;
+  attachment_name: string | null;
+  attachment_mime: string | null;
+  attachment_size: number | null;
+  client_message_id: string | null;
   is_read: boolean;
   read_at: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 export interface MessagesQueryParams {
-  page?: number;
   limit?: number;
+  before?: string;
+  after?: string;
 }
 
 export interface MessagesResponse {
   data: Message[];
-  meta: PaginationMeta;
+  has_more: boolean;
 }
 
-export interface ReplyPayload {
-  message_type: MessageType;
-  message: string;
+export interface SendMessagePayload {
+  message?: string;
+  file?: File;
+  client_message_id?: string;
+}
+
+export interface SendMessageResponse {
+  message: Message;
+  conversation: Conversation | null;
+}
+
+export interface MarkReadResponse {
+  marked: number;
+  conversation: Conversation | null;
 }
 
 export interface ConversationStatusUpdate {

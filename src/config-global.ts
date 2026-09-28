@@ -8,6 +8,6 @@ export type ConfigValue = {
 };
 
 export const CONFIG: ConfigValue = {
-  appName: 'CareMate Admin',
+  appName: 'Nirapod Admin',
   appVersion: packageJson.version,
 };

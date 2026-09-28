@@ -6,7 +6,6 @@ import {
   adminUsersService,
   adminCaregiversService,
   adminHospitalsService,
-  adminConversationsService,
 } from 'src/api/admin-services';
 import type {
   AdminProfile,
@@ -17,12 +16,6 @@ import type {
   CaregiversQueryParams,
   Hospital,
   HospitalsQueryParams,
-  Conversation,
-  ConversationsQueryParams,
-  Message,
-  MessagesQueryParams,
-  ReplyPayload,
-  ConversationStatusUpdate,
 } from 'src/api/admin-types';
 
 // Hook for admin profile
@@ -239,120 +232,4 @@ export function useHospitals(params?: HospitalsQueryParams) {
   };
 
   return { hospitals, loading, error, meta, refetch: fetchHospitals, createHospital, updateHospital, updateHospitalStatus };
-}
-
-// Hook for conversations
-export function useConversations(params?: ConversationsQueryParams) {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [meta, setMeta] = useState({ page: 1, limit: 20, total: 0 });
-
-  const fetchConversations = async (queryParams?: ConversationsQueryParams) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await adminConversationsService.getConversations(queryParams || params);
-      setConversations(response.data);
-      setMeta(response.meta);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch conversations');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchConversations();
-  }, [params?.status, params?.search, params?.page, params?.limit]);
-
-  return { conversations, loading, error, meta, refetch: fetchConversations };
-}
-
-// Hook for conversation messages
-export function useConversationMessages(conversationId: string, params?: MessagesQueryParams) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [meta, setMeta] = useState({ page: 1, limit: 20, total: 0 });
-
-  const fetchMessages = async (queryParams?: MessagesQueryParams) => {
-    if (!conversationId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await adminConversationsService.getMessages(conversationId, queryParams || params);
-      setMessages(response.data);
-      setMeta(response.meta);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch messages');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMessages();
-  }, [conversationId, params?.page, params?.limit]);
-
-  const reply = async (body: ReplyPayload) => {
-    try {
-      const newMessage = await adminConversationsService.reply(conversationId, body);
-      setMessages([...messages, newMessage]);
-      return newMessage;
-    } catch (err: any) {
-      throw new Error(err.message || 'Failed to send reply');
-    }
-  };
-
-  const markAsRead = async () => {
-    try {
-      const updatedMessages = await adminConversationsService.markAsRead(conversationId);
-      setMessages(messages.map(msg => {
-        const updated = updatedMessages.find(m => m.id === msg.id);
-        return updated ? updated : msg;
-      }));
-    } catch (err: any) {
-      throw new Error(err.message || 'Failed to mark as read');
-    }
-  };
-
-  return { messages, loading, error, meta, refetch: fetchMessages, reply, markAsRead };
-}
-
-// Hook for single conversation
-export function useConversation(id: string) {
-  const [conversation, setConversation] = useState<Conversation | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchConversation = async () => {
-    if (!id) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await adminConversationsService.getConversation(id);
-      setConversation(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch conversation');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchConversation();
-  }, [id]);
-
-  const updateStatus = async (body: ConversationStatusUpdate) => {
-    try {
-      const updated = await adminConversationsService.updateStatus(id, body);
-      setConversation(updated);
-      return updated;
-    } catch (err: any) {
-      throw new Error(err.message || 'Failed to update status');
-    }
-  };
-
-  return { conversation, loading, error, refetch: fetchConversation, updateStatus };
 }

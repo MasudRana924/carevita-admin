@@ -9,7 +9,7 @@ function Unavailable({ title }: { title: string }) {
   return (
     <DashboardContent>
       <PageHeader title={title} />
-      <EmptyState title="This detail screen is not part of the CareMate admin API." />
+      <EmptyState title="This detail screen is not part of the Nirapod admin API." />
     </DashboardContent>
   );
 }
