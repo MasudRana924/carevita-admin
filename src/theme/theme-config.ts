@@ -30,8 +30,8 @@ export const themeConfig: ThemeConfig = {
    * Typography
    *************************************** */
   fontFamily: {
-    primary: 'DM Sans Variable',
-    secondary: 'Barlow',
+    primary: 'Public Sans',
+    secondary: 'Public Sans',
   },
   /** **************************************
    * Palette

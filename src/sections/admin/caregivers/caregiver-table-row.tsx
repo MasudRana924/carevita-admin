@@ -96,8 +96,9 @@ export function CaregiverTableRow({
         <TableCell component="th" scope="row">
           <Box
             sx={{
-              gap: 2,
+              gap: 1,
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
             }}
           >
@@ -108,11 +109,11 @@ export function CaregiverTableRow({
               sx={{
                 width: 48,
                 height: 48,
-                borderRadius: 1,
+                borderRadius: '50%',
                 objectFit: 'cover',
               }}
             />
-            <Box>
+            <Box sx={{ textAlign: 'center' }}>
               <Typography variant="subtitle2" noWrap>
                 {row.name}
               </Typography>

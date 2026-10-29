@@ -39,53 +39,27 @@ export function SignInView() {
   );
 
   return (
-    <Box 
-      sx={{ 
-        height: '100%', 
-        width: '100%', 
+    <Box
+      sx={{
+        height: '100%',
+        width: '100%',
         display: 'flex',
-        backgroundImage: 'url(/assets/authbg.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
       }}
     >
-      {/* Left Side - Image (50%) */}
       <Box
         sx={{
-          width: '50%',
-          display: { xs: 'none', md: 'flex' },
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        {/* <Box
-          component="img"
-          src="/assets/auth.png"
-          alt="Authentication"
-          sx={{
-            maxWidth: '80%',
-            maxHeight: '80%',
-            objectFit: 'contain',
-          }}
-        /> */}
-      </Box>
-
-      {/* Right Side - Form (50%) */}
-      <Box
-        sx={{
-          width: { xs: '100%', md: '50%' },
+          width: '100%',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           padding: 4,
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          backgroundColor: 'white',
         }}
       >
         <Box sx={{ width: '100%', maxWidth: 450 }}>
-          <Box sx={{ gap: 1.5, display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 5 }}>
+          <Box sx={{ gap: 1.5, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', mb: 5 }}>
             <Typography variant="h4">Admin sign in</Typography>
-            <Typography variant="body2" sx={{ color: 'text.secondary', textAlign: 'center' }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               Sign in with your Nirapod admin email.
             </Typography>
           </Box>
@@ -106,7 +80,21 @@ export function SignInView() {
               onChange={(event) => setIdentifier(event.target.value)}
               required
               autoComplete="username"
-              sx={{ mb: 3 }}
+              sx={{
+                mb: 3,
+                '& input:-webkit-autofill': {
+                  WebkitBoxShadow: '0 0 0 1000px white inset',
+                  WebkitTextFillColor: 'inherit',
+                },
+                '& input:-webkit-autofill:hover': {
+                  WebkitBoxShadow: '0 0 0 1000px white inset',
+                  WebkitTextFillColor: 'inherit',
+                },
+                '& input:-webkit-autofill:focus': {
+                  WebkitBoxShadow: '0 0 0 1000px white inset',
+                  WebkitTextFillColor: 'inherit',
+                },
+              }}
               slotProps={{
                 inputLabel: { shrink: true },
                 ...iconFieldSlotProps('solar:letter-bold-duotone'),
@@ -143,7 +131,21 @@ export function SignInView() {
                   ),
                 },
               }}
-              sx={{ mb: 3 }}
+              sx={{
+                mb: 3,
+                '& input:-webkit-autofill': {
+                  WebkitBoxShadow: '0 0 0 1000px white inset',
+                  WebkitTextFillColor: 'inherit',
+                },
+                '& input:-webkit-autofill:hover': {
+                  WebkitBoxShadow: '0 0 0 1000px white inset',
+                  WebkitTextFillColor: 'inherit',
+                },
+                '& input:-webkit-autofill:focus': {
+                  WebkitBoxShadow: '0 0 0 1000px white inset',
+                  WebkitTextFillColor: 'inherit',
+                },
+              }}
             />
 
             <Button
