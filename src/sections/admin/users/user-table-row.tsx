@@ -13,7 +13,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { fDateTime } from 'src/utils/format-time';
 
 import { Label } from 'src/components/label';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -138,7 +138,7 @@ export function UserTableRow({ row, selected, onSelectRow, onBlockUser, onUnbloc
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
-            <LucideIcon icon="eva:more-vertical-fill" />
+            <Iconify icon="solar:menu-dots-vertical-bold" />
           </IconButton>
         </TableCell>
       </TableRow>
@@ -168,12 +168,12 @@ export function UserTableRow({ row, selected, onSelectRow, onBlockUser, onUnbloc
         >
           {row.status === 'active' ? (
             <MenuItem onClick={handleBlockUser} sx={{ color: 'error.main' }}>
-              <LucideIcon icon="solar:shield-cross-bold" />
+              <Iconify icon="solar:shield-cross-bold" />
               Block User
             </MenuItem>
           ) : (
             <MenuItem onClick={handleUnblockUser} sx={{ color: 'success.main' }}>
-              <LucideIcon icon="solar:shield-check-bold" />
+              <Iconify icon="solar:shield-check-bold" />
               Unblock User
             </MenuItem>
           )}

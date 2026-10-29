@@ -6,7 +6,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ export function InventoryTableToolbar({
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <LucideIcon icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                <Iconify icon="solar:magnifer-linear" sx={{ color: 'text.disabled' }} />
               </InputAdornment>
             ),
           }}
@@ -101,7 +101,7 @@ export function InventoryTableToolbar({
         <Button
           color="error"
           variant="outlined"
-          startIcon={<LucideIcon icon="eva:trash-2-fill" />}
+          startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
           sx={{
             borderRadius: 2,
             px: 3,
@@ -124,7 +124,7 @@ export function InventoryTableToolbar({
         <Button
           color="error"
           variant="outlined"
-          startIcon={<LucideIcon icon="eva:close-fill" />}
+          startIcon={<Iconify icon="solar:close-circle-bold" />}
           onClick={handleClearFilters}
           sx={{
             borderRadius: 2,

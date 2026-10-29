@@ -2,27 +2,27 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import MenuItem from '@mui/material/MenuItem';
+import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import { MessageSquare } from 'lucide-react';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 import { PageHeader } from 'src/components/page-header';
 import { DetailSkeleton, ErrorState } from 'src/components/page-states';
-import { InfoCard, InfoField } from 'src/components/record-fields';
+import { InfoField } from 'src/components/record-fields';
+import { DetailRow, InfoTile, ProfileHero, SectionCard } from 'src/components/detail-ui';
 import { StatusBadge } from 'src/components/status-badge';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
 import { usersApi } from 'src/lib/api';
 import { adminConversationsService } from 'src/api/admin-services';
 import { getErrorMessage, getRecordId, pickString } from 'src/lib/utils';
-import { fDateTime } from 'src/utils/format-time';
+import { fDate, fDateTime } from 'src/utils/format-time';
 
 const STATUS_OPTIONS = ['active', 'blocked'];
 
@@ -106,13 +106,29 @@ export function UserDetailView() {
   const created = pickString(user, ['created_at'], '');
   const updated = pickString(user, ['updated_at'], '');
 
+  const userId = pickString(user, ['id'], id);
+  const breadcrumbs = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Users', href: '/users' },
+    { title: user ? name : 'User details' },
+  ];
+
+  const handleCopyId = async () => {
+    try {
+      await navigator.clipboard.writeText(userId);
+      showSnackbar('User ID copied', 'success');
+    } catch {
+      showSnackbar('Could not copy the ID', 'error');
+    }
+  };
+
   return (
-    <DashboardContent maxWidth="xl">
+    <DashboardContent>
       {query.isLoading && !user ? (
         <DetailSkeleton />
       ) : query.error || (!user && !query.isLoading) ? (
         <>
-          <PageHeader title="User details" />
+          <PageHeader title="User details" breadcrumbs={breadcrumbs} />
           <ErrorState
             message={query.error ? getErrorMessage(query.error) : 'User not found.'}
             onRetry={() => query.refetch()}
@@ -120,20 +136,32 @@ export function UserDetailView() {
         </>
       ) : (
         <>
-          <PageHeader
-            title={editing ? 'Edit user' : 'User details'}
-            description={email !== '—' ? email : phone}
-            action={
-              <Stack direction="row" spacing={1.5}>
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  startIcon={<LucideIcon icon="eva:arrow-ios-back-fill" />}
-                  onClick={() => navigate('/users')}
-                >
-                  Back
-                </Button>
-                {editing ? (
+          <PageHeader title={editing ? 'Edit user' : 'User details'} breadcrumbs={breadcrumbs} />
+
+          <Stack spacing={3}>
+            <ProfileHero
+              avatarSrc={photo}
+              name={name}
+              subtitle={
+                [email !== '—' ? email : null, phone !== '—' ? phone : null].filter(Boolean).join('  ·  ') ||
+                'No contact details'
+              }
+              badges={
+                <>
+                  <StatusBadge value={pickString(user, ['role'], '')} />
+                  <StatusBadge value={pickString(user, ['status'], '')} />
+                  <StatusBadge
+                    value={Boolean(user?.is_verified)}
+                    label={user?.is_verified ? 'Verified' : 'Unverified'}
+                  />
+                  <StatusBadge
+                    value={Boolean(user?.ekyc_status)}
+                    label={user?.ekyc_status ? 'eKYC verified' : 'eKYC pending'}
+                  />
+                </>
+              }
+              actions={
+                editing ? (
                   <>
                     <Button
                       variant="outlined"
@@ -146,6 +174,7 @@ export function UserDetailView() {
                     <Button
                       variant="contained"
                       disabled={mutation.isPending}
+                      startIcon={<Iconify icon="solar:diskette-bold" />}
                       onClick={() => mutation.mutate()}
                     >
                       {mutation.isPending ? 'Saving...' : 'Save changes'}
@@ -155,7 +184,7 @@ export function UserDetailView() {
                   <>
                     <Button
                       variant="outlined"
-                      startIcon={<MessageSquare size={18} />}
+                      startIcon={<Iconify icon="solar:chat-round-dots-bold" width={18} />}
                       disabled={messageUser.isPending}
                       onClick={() => messageUser.mutate()}
                     >
@@ -163,124 +192,142 @@ export function UserDetailView() {
                     </Button>
                     <Button
                       variant="contained"
-                      startIcon={<LucideIcon icon="solar:pen-bold" />}
+                      startIcon={<Iconify icon="solar:pen-bold" />}
                       onClick={() => navigate(`/users/${id}?edit=1`)}
                     >
                       Edit
                     </Button>
                   </>
-                )}
-              </Stack>
-            }
-          />
+                )
+              }
+              tiles={
+                <>
+                  <InfoTile icon="solar:letter-bold-duotone" label="Email" value={email || '—'} />
+                  <InfoTile icon="solar:phone-bold-duotone" label="Phone" value={phone || '—'} />
+                  <InfoTile
+                    icon="solar:calendar-bold-duotone"
+                    label="Member since"
+                    value={created ? fDate(created) : '—'}
+                  />
+                  <InfoTile
+                    icon="solar:card-bold-duotone"
+                    label="User ID"
+                    value={userId}
+                    action={
+                      <Tooltip title="Copy ID">
+                        <IconButton size="small" onClick={handleCopyId}>
+                          <Iconify icon="solar:copy-linear" width={16} />
+                        </IconButton>
+                      </Tooltip>
+                    }
+                  />
+                </>
+              }
+            />
 
-          <Stack spacing={3}>
-            <Card
-              sx={{
-                p: 3,
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                boxShadow: 'none',
-              }}
-            >
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} alignItems={{ sm: 'center' }}>
-                <Avatar src={photo || undefined} alt={name} sx={{ width: 88, height: 88, fontSize: 32 }}>
-                  {name.charAt(0).toUpperCase()}
-                </Avatar>
-                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                  <Typography variant="h5">{name}</Typography>
-                  <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }}>
-                    {[email !== '—' ? email : null, phone !== '—' ? phone : null].filter(Boolean).join('  ·  ') ||
-                      'No contact details'}
-                  </Typography>
-                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 1.5 }}>
-                    <StatusBadge value={pickString(user, ['role'], '')} />
-                    <StatusBadge value={pickString(user, ['status'], '')} />
-                    <StatusBadge
-                      value={Boolean(user?.is_verified)}
-                      label={user?.is_verified ? 'Verified' : 'Unverified'}
-                    />
-                    <StatusBadge
-                      value={Boolean(user?.ekyc_status)}
-                      label={user?.ekyc_status ? 'eKYC verified' : 'eKYC pending'}
-                    />
-                  </Stack>
-                </Box>
-              </Stack>
-            </Card>
-
-            <Box
-              sx={{
-                display: 'grid',
-                gap: 3,
-                gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-              }}
-            >
-              <InfoCard title="Contact">
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gap: 2.5,
-                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                  }}
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, lg: 7 }}>
+                <SectionCard
+                  icon="solar:user-id-bold-duotone"
+                  color="primary"
+                  title="Personal details"
+                  subtitle="Contact information shared by the user"
                 >
-                  <InfoField label="Name" value={name} />
-                  <InfoField label="Email" value={email} />
-                  <InfoField label="Phone" value={phone} />
-                  <InfoField label="Language" value={pickString(user, ['language_preference'], '—')} />
-                  <InfoField label="Emergency contact" value={formatValue(user?.emergency_contact)} />
-                  <InfoField label="Address" value={formatValue(user?.address)} />
-                </Box>
-              </InfoCard>
+                  <Box sx={{ display: 'grid', gap: 2.5, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+                    <InfoField label="Full name" value={name} />
+                    <InfoField label="Email" value={email} />
+                    <InfoField label="Phone" value={phone} />
+                    <InfoField label="Language" value={pickString(user, ['language_preference'], '—')} />
+                    <InfoField label="Emergency contact" value={formatValue(user?.emergency_contact)} />
+                    <InfoField label="Address" value={formatValue(user?.address)} />
+                  </Box>
+                </SectionCard>
+              </Grid>
 
-              <InfoCard title="Account">
-                {editing ? (
-                  <Box sx={{ maxWidth: 320 }}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Status"
-                      value={status}
-                      onChange={(event) => setStatus(event.target.value)}
-                    >
-                      {STATUS_OPTIONS.map((item) => (
-                        <MenuItem key={item} value={item}>
-                          {item}
-                        </MenuItem>
-                      ))}
-                    </TextField>
-                  </Box>
-                ) : (
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gap: 2.5,
-                      gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                    }}
-                  >
-                    <InfoField label="Role" value={<StatusBadge value={pickString(user, ['role'], '')} />} />
-                    <InfoField label="Status" value={<StatusBadge value={pickString(user, ['status'], '')} />} />
-                    <InfoField
-                      label="Email verified"
-                      value={<StatusBadge value={Boolean(user?.is_verified)} label={user?.is_verified ? 'Verified' : 'Unverified'} />}
-                    />
-                    <InfoField
-                      label="eKYC"
-                      value={
-                        <StatusBadge
-                          value={Boolean(user?.ekyc_status)}
-                          label={user?.ekyc_status ? 'Verified' : 'Pending'}
-                        />
-                      }
-                    />
-                    <InfoField label="Created" value={created ? fDateTime(created) : '—'} />
-                    <InfoField label="Updated" value={updated ? fDateTime(updated) : '—'} />
-                    <InfoField label="User ID" value={pickString(user, ['id'], id)} />
-                  </Box>
-                )}
-              </InfoCard>
-            </Box>
+              <Grid size={{ xs: 12, lg: 5 }}>
+                <SectionCard
+                  icon="solar:shield-user-bold-duotone"
+                  color="info"
+                  title="Account"
+                  subtitle={editing ? 'Change the account status' : 'Role, verification and activity'}
+                >
+                  {editing ? (
+                    <Stack spacing={1.5}>
+                      {STATUS_OPTIONS.map((item) => {
+                        const active = status === item;
+                        const tone = item === 'blocked' ? 'error' : 'success';
+                        return (
+                          <Box
+                            key={item}
+                            role="radio"
+                            aria-checked={active}
+                            tabIndex={0}
+                            onClick={() => setStatus(item)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter' || event.key === ' ') setStatus(item);
+                            }}
+                            sx={{
+                              p: 2,
+                              gap: 1.5,
+                              display: 'flex',
+                              alignItems: 'center',
+                              cursor: 'pointer',
+                              borderRadius: 1.5,
+                              border: '1px solid',
+                              borderColor: active ? `${tone}.main` : 'divider',
+                              bgcolor: active ? `${tone}.lighter` : 'transparent',
+                              transition: 'all 160ms ease',
+                            }}
+                          >
+                            <Iconify
+                              icon={item === 'blocked' ? 'solar:forbidden-circle-bold' : 'solar:check-circle-bold'}
+                              width={24}
+                              sx={{ color: active ? `${tone}.main` : 'text.disabled' }}
+                            />
+                            <Box sx={{ flexGrow: 1 }}>
+                              <Typography variant="subtitle2" sx={{ textTransform: 'capitalize' }}>
+                                {item}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                                {item === 'blocked'
+                                  ? 'The user cannot sign in or make bookings'
+                                  : 'The user can sign in and book caregivers'}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        );
+                      })}
+                    </Stack>
+                  ) : (
+                    <Stack spacing={1.75}>
+                      <DetailRow label="Role" value={<StatusBadge value={pickString(user, ['role'], '')} />} />
+                      <DetailRow label="Status" value={<StatusBadge value={pickString(user, ['status'], '')} />} />
+                      <DetailRow
+                        label="Email verified"
+                        value={
+                          <StatusBadge
+                            value={Boolean(user?.is_verified)}
+                            label={user?.is_verified ? 'Verified' : 'Unverified'}
+                          />
+                        }
+                      />
+                      <DetailRow
+                        label="eKYC"
+                        value={
+                          <StatusBadge
+                            value={Boolean(user?.ekyc_status)}
+                            label={user?.ekyc_status ? 'Verified' : 'Pending'}
+                          />
+                        }
+                      />
+                      <Divider sx={{ borderStyle: 'dashed' }} />
+                      <DetailRow label="Created" value={created ? fDateTime(created) : '—'} />
+                      <DetailRow label="Updated" value={updated ? fDateTime(updated) : '—'} />
+                    </Stack>
+                  )}
+                </SectionCard>
+              </Grid>
+            </Grid>
           </Stack>
         </>
       )}

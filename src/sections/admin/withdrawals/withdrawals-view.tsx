@@ -47,7 +47,7 @@ export function WithdrawalsView() {
       actions={[
         ({ confirm }) => ({
           label: 'Approve',
-          icon: 'eva:checkmark-fill',
+          icon: 'solar:check-read-linear',
           color: 'success',
           hidden: (row) => !['PENDING', 'PROCESSING', 'pending', 'processing'].includes(String(row.status || '')),
           onClick: (row) =>
@@ -63,7 +63,7 @@ export function WithdrawalsView() {
         }),
         ({ confirm }) => ({
           label: 'Reject',
-          icon: 'eva:close-fill',
+          icon: 'solar:close-circle-bold',
           color: 'error',
           hidden: (row) => !['PENDING', 'PROCESSING', 'pending', 'processing'].includes(String(row.status || '')),
           onClick: (row) =>

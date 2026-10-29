@@ -9,7 +9,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 
 import { ConfirmDialog } from 'src/components/custom-dialog';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 import { CustomPopover, usePopover } from 'src/components/custom-popover';
 import { useRouter } from 'src/routes/hooks';
 import { fCurrency } from 'src/utils/format-number';
@@ -169,7 +169,7 @@ export function PurchaseOrdersTableRow({ row, selected, onSelectRow, onDeleteRow
 
         <TableCell align="right">
           <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
-            <LucideIcon icon="eva:more-vertical-fill" />
+            <Iconify icon="solar:menu-dots-vertical-bold" />
           </IconButton>
         </TableCell>
       </TableRow>
@@ -187,7 +187,7 @@ export function PurchaseOrdersTableRow({ row, selected, onSelectRow, onDeleteRow
             popover.onClose();
           }}
         >
-          <LucideIcon icon="solar:eye-bold" />
+          <Iconify icon="solar:eye-bold" />
           View
         </MenuItem>
 
@@ -197,7 +197,7 @@ export function PurchaseOrdersTableRow({ row, selected, onSelectRow, onDeleteRow
             popover.onClose();
           }}
         >
-          <LucideIcon icon="solar:pen-bold" />
+          <Iconify icon="solar:pen-bold" />
           Edit
         </MenuItem>
 
@@ -208,7 +208,7 @@ export function PurchaseOrdersTableRow({ row, selected, onSelectRow, onDeleteRow
           }}
           sx={{ color: 'error.main' }}
         >
-          <LucideIcon icon="solar:trash-bin-trash-bold" />
+          <Iconify icon="solar:trash-bin-trash-bold" />
           Delete
         </MenuItem>
       </CustomPopover>

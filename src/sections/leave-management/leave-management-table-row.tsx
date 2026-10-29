@@ -16,7 +16,7 @@ import { usePopover } from 'src/hooks/use-popover';
 import { fDate } from 'src/utils/format-time';
 
 import { Label } from 'src/components/label';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 import { CustomPopover, usePopover as usePopoverCustom } from 'src/components/custom-popover';
 
 // ----------------------------------------------------------------------
@@ -136,7 +136,7 @@ export function LeaveManagementTableRow({
 
         <TableCell align="right">
           <IconButton color={quickEdit.open ? 'primary' : 'default'} onClick={quickEdit.onTrue}>
-            <LucideIcon icon="eva:more-vertical-fill" />
+            <Iconify icon="solar:menu-dots-vertical-bold" />
           </IconButton>
         </TableCell>
       </TableRow>
@@ -153,7 +153,7 @@ export function LeaveManagementTableRow({
             color: 'info.main',
           }}
         >
-          <LucideIcon icon="solar:eye-bold" />
+          <Iconify icon="solar:eye-bold" />
           View
         </MenuItem>
 
@@ -163,7 +163,7 @@ export function LeaveManagementTableRow({
             color: 'primary.main',
           }}
         >
-          <LucideIcon icon="solar:pen-bold" />
+          <Iconify icon="solar:pen-bold" />
           Edit
         </MenuItem>
 
@@ -173,7 +173,7 @@ export function LeaveManagementTableRow({
             color: 'error.main',
           }}
         >
-          <LucideIcon icon="solar:trash-bin-trash-bold" />
+          <Iconify icon="solar:trash-bin-trash-bold" />
           Delete
         </MenuItem>
       </CustomPopover>
@@ -185,7 +185,7 @@ export function LeaveManagementTableRow({
         sx={{ width: 140 }}
       >
         <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-          <LucideIcon icon="solar:trash-bin-trash-bold" />
+          <Iconify icon="solar:trash-bin-trash-bold" />
           Delete
         </MenuItem>
       </CustomPopover>

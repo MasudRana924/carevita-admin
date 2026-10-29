@@ -7,7 +7,7 @@ export { Scrollbar } from './scrollbar';
 export { Preloader } from './preloader';
 export { Breadcrumb } from './breadcrumb';
 export { ErrorAlert } from './error-alert';
-export { LucideIcon } from './lucide-icons';
+export { Iconify } from './iconify';
 export { TableNoData } from './table-no-data';
 export { AuthRedirect } from './auth-redirect';
 export { ConfirmDialog } from './custom-dialog';

@@ -17,7 +17,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { Breadcrumb } from 'src/components/breadcrumb';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 import { TableNoData } from 'src/components/table-no-data';
 import { useSnackbar } from 'src/components/snackbar';
 import { fCurrency } from 'src/utils/format-number';
@@ -160,7 +160,7 @@ export function SalesReportsView() {
       >
         <Button
           variant="outlined"
-          startIcon={<LucideIcon icon="eva:download-fill" />}
+          startIcon={<Iconify icon="solar:download-bold" />}
           onClick={handleExportReport}
         >
           Export Report

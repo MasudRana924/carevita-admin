@@ -6,7 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ export function UserTableToolbar({ numSelected, filterName, onFilterName, onClea
             placeholder="Search user..."
             startAdornment={
               <InputAdornment position="start">
-                <LucideIcon width={20} icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                <Iconify width={20} icon="solar:magnifer-linear" sx={{ color: 'text.disabled' }} />
               </InputAdornment>
             }
             sx={{ maxWidth: 320 }}
@@ -49,7 +49,7 @@ export function UserTableToolbar({ numSelected, filterName, onFilterName, onClea
             <Button
               color="error"
               variant="outlined"
-              startIcon={<LucideIcon icon="eva:close-fill" />}
+              startIcon={<Iconify icon="solar:close-circle-bold" />}
               onClick={onClearFilters}
               sx={{
                 borderRadius: 2,
@@ -76,7 +76,7 @@ export function UserTableToolbar({ numSelected, filterName, onFilterName, onClea
              {numSelected > 0 && (
          <Tooltip title="Delete">
            <IconButton sx={{ color: 'error.main' }}>
-             <LucideIcon icon="solar:trash-bin-trash-bold" />
+             <Iconify icon="solar:trash-bin-trash-bold" />
            </IconButton>
          </Tooltip>
        )}

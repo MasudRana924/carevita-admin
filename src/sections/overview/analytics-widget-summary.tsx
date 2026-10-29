@@ -12,7 +12,7 @@ import { fNumber, fPercent, fShortenNumber } from 'src/utils/format-number';
 
 import { SvgColor } from 'src/components/svg-color';
 import { Chart, useChart } from 'src/components/chart';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -75,7 +75,7 @@ export function AnalyticsWidgetSummary({
         alignItems: 'center',
       }}
     >
-      <LucideIcon width={20} icon={percent < 0 ? 'eva:trending-down-fill' : 'eva:trending-up-fill'} />
+      <Iconify width={20} icon={percent < 0 ? 'solar:graph-down-bold' : 'solar:graph-up-bold'} />
       <Box component="span" sx={{ typography: 'subtitle2' }}>
         {percent > 0 && '+'}
         {fPercent(percent)}

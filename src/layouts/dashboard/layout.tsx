@@ -7,9 +7,6 @@ import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { useTheme } from '@mui/material/styles';
 
-import IconButton from '@mui/material/IconButton';
-import { Bell } from 'lucide-react';
-
 import { RouterLink } from 'src/routes/components';
 
 import { NavMobile, NavDesktop } from './nav';
@@ -23,6 +20,7 @@ import { MenuButton } from '../components/menu-button';
 import { HeaderSection } from '../core/header-section';
 import { LayoutSection } from '../core/layout-section';
 import { AccountPopover } from '../components/account-popover';
+import { PendingVerificationBadge } from 'src/components/pending-verification-badge';
 
 import type { MainSectionProps } from '../core/main-section';
 import type { HeaderSectionProps } from '../core/header-section';
@@ -77,9 +75,7 @@ export function DashboardLayout({
       rightArea: (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, flexGrow: 1, justifyContent: 'flex-end' }}>
           <GlobalSearch />
-          <IconButton component={RouterLink} href="/notifications" aria-label="Notifications">
-            <Bell size={20} />
-          </IconButton>
+          <PendingVerificationBadge />
           <AccountPopover data={_account} />
         </Box>
       ),

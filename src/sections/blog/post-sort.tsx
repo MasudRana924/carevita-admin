@@ -8,7 +8,7 @@ import Popover from '@mui/material/Popover';
 import MenuList from '@mui/material/MenuList';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -36,8 +36,8 @@ export function PostSort({ options, sortBy, onSort, sx, ...other }: PostSortProp
         color="inherit"
         onClick={handleOpenPopover}
         endIcon={
-          <LucideIcon
-            icon={openPopover ? 'eva:arrow-ios-upward-fill' : 'eva:arrow-ios-downward-fill'}
+          <Iconify
+            icon={openPopover ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'}
             sx={{
               ml: -0.5,
             }}

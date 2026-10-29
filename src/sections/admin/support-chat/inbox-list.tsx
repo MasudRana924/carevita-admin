@@ -12,13 +12,45 @@ import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
 import CircularProgress from '@mui/material/CircularProgress';
 import ListItemButton from '@mui/material/ListItemButton';
-import { MessageSquare, Search } from 'lucide-react';
 
 import type { Conversation, ConversationStatus } from 'src/api/admin-types';
 
 import { displayName, formatInboxTime } from './utils';
+import { Iconify } from 'src/components/iconify';
 
 export type InboxTab = 'all' | 'unread';
+
+const PILL_FIELD_SX = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 1.5,
+    bgcolor: 'background.neutral',
+    '& fieldset': { borderColor: 'transparent' },
+    '&:hover fieldset': { borderColor: 'divider' },
+  },
+} as const;
+
+function CountPill({ value, color }: { value: number; color: string }) {
+  return (
+    <Box
+      component="span"
+      sx={{
+        flexShrink: 0,
+        px: 0.75,
+        minWidth: 20,
+        height: 20,
+        lineHeight: '20px',
+        textAlign: 'center',
+        borderRadius: 10,
+        fontSize: 12,
+        fontWeight: 700,
+        bgcolor: color,
+        color: 'common.white',
+      }}
+    >
+      {value > 99 ? '99+' : value}
+    </Box>
+  );
+}
 
 type Props = {
   conversations: Conversation[];
@@ -75,10 +107,31 @@ export function InboxList({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: 1, minHeight: 0 }}>
-      <Box sx={{ p: 2, pb: 1 }}>
-        <Typography variant="h6" sx={{ mb: 1.5 }}>
-          Support Chat
-        </Typography>
+      <Box sx={{ px: 2.5, pt: 2.5, pb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 1.25,
+              color: 'primary.main',
+              bgcolor: 'primary.lighter',
+            }}
+          >
+            <Iconify icon="solar:chat-round-dots-bold-duotone" width={22} />
+          </Box>
+          <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
+            <Typography variant="subtitle1">Inbox</Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              {unreadConversations > 0 ? `${unreadConversations} unread conversation${unreadConversations > 1 ? 's' : ''}` : 'All caught up'}
+            </Typography>
+          </Box>
+        </Box>
+
         <Box sx={{ display: 'flex', gap: 1 }}>
           <TextField
             fullWidth
@@ -86,11 +139,12 @@ export function InboxList({
             placeholder="Search name, phone or email"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
+            sx={PILL_FIELD_SX}
             slotProps={{
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search size={18} />
+                    <Iconify icon="solar:magnifer-linear" width={18} sx={{ color: 'text.disabled' }} />
                   </InputAdornment>
                 ),
               },
@@ -101,7 +155,7 @@ export function InboxList({
             size="small"
             value={status}
             onChange={(e) => onStatusChange(e.target.value as '' | ConversationStatus)}
-            sx={{ minWidth: 110 }}
+            sx={[PILL_FIELD_SX, { minWidth: 118 }]}
             slotProps={{ select: { displayEmpty: true } }}
           >
             <MenuItem value="">Any status</MenuItem>
@@ -110,43 +164,40 @@ export function InboxList({
             <MenuItem value="archived">Archived</MenuItem>
           </TextField>
         </Box>
+
+        <Tabs
+          value={tab}
+          onChange={(_, value) => onTabChange(value)}
+          variant="fullWidth"
+          sx={{
+            mt: 2,
+            p: 0.5,
+            minHeight: 0,
+            borderRadius: 1.5,
+            bgcolor: 'background.neutral',
+            '& .MuiTabs-indicator': {
+              height: 1,
+              borderRadius: 1.25,
+              bgcolor: 'background.paper',
+              boxShadow: '0 1px 4px rgba(15, 23, 42, 0.12)',
+            },
+            '& .MuiTab-root': { zIndex: 1, minHeight: 34, py: 0.5, mr: '0 !important' },
+          }}
+        >
+          <Tab value="all" label="All" />
+          <Tab
+            value="unread"
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                Unread
+                {unreadConversations > 0 && <CountPill value={unreadConversations} color="error.main" />}
+              </Box>
+            }
+          />
+        </Tabs>
       </Box>
 
-      <Tabs
-        value={tab}
-        onChange={(_, value) => onTabChange(value)}
-        sx={{ px: 2, minHeight: 40, borderBottom: 1, borderColor: 'divider' }}
-      >
-        <Tab value="all" label="All" sx={{ minHeight: 40 }} />
-        <Tab
-          value="unread"
-          sx={{ minHeight: 40 }}
-          label={
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              Unread
-              {unreadConversations > 0 && (
-                <Box
-                  component="span"
-                  sx={{
-                    px: 0.75,
-                    minWidth: 20,
-                    height: 20,
-                    lineHeight: '20px',
-                    borderRadius: 10,
-                    fontSize: 12,
-                    bgcolor: 'error.main',
-                    color: 'common.white',
-                  }}
-                >
-                  {unreadConversations}
-                </Box>
-              )}
-            </Box>
-          }
-        />
-      </Tabs>
-
-      <Box ref={scrollRef} sx={{ flex: '1 1 auto', overflowY: 'auto', minHeight: 0 }}>
+      <Box ref={scrollRef} sx={{ flex: '1 1 auto', overflowY: 'auto', minHeight: 0, px: 1, pb: 1 }}>
         {loading && !conversations.length ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
             <CircularProgress size={28} />
@@ -162,7 +213,7 @@ export function InboxList({
           </Box>
         ) : !conversations.length ? (
           <Box sx={{ textAlign: 'center', py: 6, px: 2, color: 'text.secondary' }}>
-            <MessageSquare size={32} style={{ opacity: 0.4 }} />
+            <Iconify icon="solar:chat-round-dots-bold-duotone" width={32} style={{ opacity: 0.4 }} />
             <Typography variant="body2" sx={{ mt: 1 }}>
               {search ? 'No conversations match your search.' : tab === 'unread' ? 'No unread conversations.' : 'No conversations yet.'}
             </Typography>
@@ -206,7 +257,19 @@ const InboxRow = memo(function InboxRow({ conversation, selected, onSelect }: Ro
     <ListItemButton
       selected={selected}
       onClick={handleClick}
-      sx={{ px: 2, py: 1.25, gap: 1.5, alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}
+      sx={{
+        px: 1.5,
+        py: 1.25,
+        mb: 0.5,
+        gap: 1.5,
+        borderRadius: 1.5,
+        alignItems: 'center',
+        transition: 'background-color 160ms ease',
+        '&.Mui-selected': {
+          bgcolor: 'primary.lighter',
+          '&:hover': { bgcolor: 'primary.lighter' },
+        },
+      }}
     >
       <Badge
         overlap="circular"
@@ -214,8 +277,22 @@ const InboxRow = memo(function InboxRow({ conversation, selected, onSelect }: Ro
         color="error"
         invisible={!unread}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        sx={{ '& .MuiBadge-dot': { width: 12, height: 12, borderRadius: '50%', border: '2px solid', borderColor: 'background.paper' } }}
       >
-        <Avatar src={conversation.user_photo || undefined} alt={name} sx={{ width: 44, height: 44 }}>
+        <Avatar
+          src={conversation.user_photo || undefined}
+          alt={name}
+          sx={{
+            width: 46,
+            height: 46,
+            fontWeight: 600,
+            color: 'primary.dark',
+            bgcolor: 'primary.lighter',
+            outline: unread ? '2px solid' : 'none',
+            outlineColor: 'primary.main',
+            outlineOffset: 2,
+          }}
+        >
           {name.charAt(0).toUpperCase()}
         </Avatar>
       </Badge>
@@ -250,26 +327,7 @@ const InboxRow = memo(function InboxRow({ conversation, selected, onSelect }: Ro
             {conversation.last_message_sender_role === 'admin' ? 'You: ' : ''}
             {preview}
           </Typography>
-          {unread && (
-            <Box
-              component="span"
-              sx={{
-                flexShrink: 0,
-                px: 0.75,
-                minWidth: 20,
-                height: 20,
-                lineHeight: '20px',
-                textAlign: 'center',
-                borderRadius: 10,
-                fontSize: 12,
-                fontWeight: 700,
-                bgcolor: 'primary.main',
-                color: 'common.white',
-              }}
-            >
-              {conversation.admin_unread_count > 99 ? '99+' : conversation.admin_unread_count}
-            </Box>
-          )}
+          {unread && <CountPill value={conversation.admin_unread_count} color="primary.main" />}
         </Box>
       </Box>
     </ListItemButton>

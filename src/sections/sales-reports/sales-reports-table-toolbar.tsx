@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -84,7 +84,7 @@ export function SalesReportsTableToolbar({
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <LucideIcon icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                <Iconify icon="solar:magnifer-linear" sx={{ color: 'text.disabled' }} />
               </InputAdornment>
             ),
           }}
@@ -157,7 +157,7 @@ export function SalesReportsTableToolbar({
         <Button
           color="error"
           variant="outlined"
-          startIcon={<LucideIcon icon="eva:trash-2-fill" />}
+          startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
           onClick={onDeleteSelected}
           sx={{
             borderRadius: 2,
@@ -181,7 +181,7 @@ export function SalesReportsTableToolbar({
         <Button
           color="error"
           variant="outlined"
-          startIcon={<LucideIcon icon="eva:close-fill" />}
+          startIcon={<Iconify icon="solar:close-circle-bold" />}
           onClick={handleClearFilters}
           sx={{
             borderRadius: 2,

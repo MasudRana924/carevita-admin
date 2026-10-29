@@ -3,7 +3,7 @@ import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import Typography from '@mui/material/Typography';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -41,8 +41,8 @@ export function TableNoData({ searchQuery, onClearFilters, colSpan = 9 }: TableN
               mb: 2,
             }}
           >
-            <LucideIcon 
-              icon="eva:search-fill" 
+            <Iconify 
+              icon="solar:magnifer-linear" 
               sx={{ 
                 width: 48, 
                 height: 48, 

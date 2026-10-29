@@ -6,6 +6,8 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
+import { PageLoader } from './page-loader';
+
 export function ErrorState({
   message,
   onRetry,
@@ -49,13 +51,7 @@ export function EmptyState({
 }
 
 export function TableSkeleton({ rows = 6 }: { rows?: number }) {
-  return (
-    <Stack spacing={1.5} sx={{ p: 2 }}>
-      {Array.from({ length: rows }).map((_, index) => (
-        <Skeleton key={index} variant="rounded" height={44} />
-      ))}
-    </Stack>
-  );
+  return <PageLoader minHeight={Math.max(rows, 4) * 56} />;
 }
 
 export function CardSkeletonGrid({ count = 5 }: { count?: number }) {
@@ -78,72 +74,5 @@ export function CardSkeletonGrid({ count = 5 }: { count?: number }) {
 }
 
 export function DetailSkeleton() {
-  return (
-    <Stack spacing={3} sx={{ width: 1 }}>
-      <Stack spacing={1}>
-        <Skeleton variant="text" width={220} height={40} />
-        <Skeleton variant="text" width={320} height={24} />
-      </Stack>
-
-      <Card
-        sx={{
-          p: 3,
-          borderRadius: 2,
-          border: '1px solid',
-          borderColor: 'divider',
-          boxShadow: 'none',
-        }}
-      >
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2.5} alignItems={{ sm: 'center' }}>
-          <Skeleton variant="circular" width={88} height={88} />
-          <Stack spacing={1} sx={{ flexGrow: 1 }}>
-            <Skeleton variant="text" width={240} height={32} />
-            <Skeleton variant="text" width={280} height={20} />
-            <Stack direction="row" spacing={1}>
-              <Skeleton variant="rounded" width={72} height={24} />
-              <Skeleton variant="rounded" width={72} height={24} />
-              <Skeleton variant="rounded" width={96} height={24} />
-            </Stack>
-          </Stack>
-        </Stack>
-      </Card>
-
-      <Box
-        sx={{
-          display: 'grid',
-          gap: 3,
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-        }}
-      >
-        {[0, 1].map((card) => (
-          <Card
-            key={card}
-            sx={{
-              p: 3,
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'divider',
-              boxShadow: 'none',
-            }}
-          >
-            <Skeleton variant="text" width={160} height={28} sx={{ mb: 2 }} />
-            <Box
-              sx={{
-                display: 'grid',
-                gap: 2,
-                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-              }}
-            >
-              {Array.from({ length: 6 }).map((_, index) => (
-                <Stack key={index} spacing={0.75}>
-                  <Skeleton variant="text" width={88} height={16} />
-                  <Skeleton variant="rounded" height={40} />
-                </Stack>
-              ))}
-            </Box>
-          </Card>
-        ))}
-      </Box>
-    </Stack>
-  );
+  return <PageLoader minHeight="60vh" />;
 }

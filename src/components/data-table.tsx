@@ -16,7 +16,7 @@ import Tooltip from '@mui/material/Tooltip';
 
 import { TableHeadCustom } from 'src/components/table';
 import { EmptyState, ErrorState, TableSkeleton } from 'src/components/page-states';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 export type DataTableColumn<T> = {
   id: string;
@@ -265,7 +265,7 @@ export function DataTable<T extends Record<string, unknown>>({
                                     aria-label={action.label}
                                     onClick={() => action.onClick(row)}
                                   >
-                                    <LucideIcon icon={action.icon || 'eva:more-vertical-fill'} width={18} />
+                                    <Iconify icon={action.icon || 'solar:menu-dots-vertical-bold'} width={18} />
                                   </IconButton>
                                 </Tooltip>
                               ))}

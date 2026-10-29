@@ -15,7 +15,7 @@ import { useRouter } from 'src/routes/hooks';
 import { fDateTime } from 'src/utils/format-time';
 
 import { Label } from 'src/components/label';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -145,7 +145,7 @@ export function HospitalTableRow({ row, selected, onSelectRow, onUpdateStatus }:
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
-            <LucideIcon icon="eva:more-vertical-fill" />
+            <Iconify icon="solar:menu-dots-vertical-bold" />
           </IconButton>
         </TableCell>
       </TableRow>
@@ -174,12 +174,12 @@ export function HospitalTableRow({ row, selected, onSelectRow, onUpdateStatus }:
           }}
         >
           <MenuItem onClick={handleEdit}>
-            <LucideIcon icon="solar:pen-bold" />
+            <Iconify icon="solar:pen-bold" />
             Edit
           </MenuItem>
 
           <MenuItem onClick={handleToggleStatus} sx={{ color: row.is_active ? 'error.main' : 'success.main' }}>
-            <LucideIcon icon={row.is_active ? 'solar:shield-cross-bold' : 'solar:shield-check-bold'} />
+            <Iconify icon={row.is_active ? 'solar:shield-cross-bold' : 'solar:shield-check-bold'} />
             {row.is_active ? 'Deactivate' : 'Activate'}
           </MenuItem>
         </MenuList>

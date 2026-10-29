@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-
 import { useAuth } from 'src/contexts/AuthContext';
+
+import { PageLoader } from './page-loader';
 
 export function AuthRedirect({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
@@ -16,17 +15,15 @@ export function AuthRedirect({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, isAdmin, isLoading, navigate]);
 
-  if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   if (isAuthenticated && isAdmin) {
-    return null;
+    return <PageLoader variant="fullscreen" />;
   }
 
-  return <>{children}</>;
+  // Overlay instead of unmounting, so the sign-in form keeps its values if login fails.
+  return (
+    <>
+      {children}
+      {isLoading && <PageLoader variant="fullscreen" />}
+    </>
+  );
 }

@@ -11,7 +11,6 @@ import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import { ArrowLeft, FileText, Paperclip, Send, UserRound, X } from 'lucide-react';
 
 import { RouterLink } from 'src/routes/components';
 
@@ -38,10 +37,17 @@ import {
   validateAttachment,
   type ChatMessage,
 } from './utils';
+import { Iconify } from 'src/components/iconify';
 
 // Every Nth poll re-fetches the latest page instead of `after`, so ✓✓ read
 // receipts on already-loaded admin messages stay up to date.
 const FULL_REFRESH_EVERY = 4;
+
+const STATUS_META: Record<ConversationStatus, { label: string; color: 'success' | 'warning' | 'info' }> = {
+  active: { label: 'Active', color: 'success' },
+  closed: { label: 'Closed', color: 'warning' },
+  archived: { label: 'Archived', color: 'info' },
+};
 
 type Props = {
   conversationId: string;
@@ -339,6 +345,7 @@ export function ChatThread({ conversationId, initialConversation, onConversation
 
   const name = displayName(conversation);
   const canOpenProfile = !!conversation?.user_id && (!conversation.user_role || conversation.user_role === 'USER');
+  const statusColor = conversation ? (STATUS_META[conversation.status] ?? STATUS_META.active).color : 'success';
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: 1, minHeight: 0 }}>
@@ -347,8 +354,8 @@ export function ChatThread({ conversationId, initialConversation, onConversation
           display: 'flex',
           alignItems: 'center',
           gap: 1.5,
-          px: 2,
-          py: 1.25,
+          px: 2.5,
+          py: 1.75,
           borderBottom: 1,
           borderColor: 'divider',
           bgcolor: 'background.paper',
@@ -356,12 +363,33 @@ export function ChatThread({ conversationId, initialConversation, onConversation
       >
         {onBack && (
           <IconButton onClick={onBack} sx={{ display: { md: 'none' } }} aria-label="Back to inbox">
-            <ArrowLeft size={20} />
+            <Iconify icon="solar:arrow-left-linear" width={20} />
           </IconButton>
         )}
-        <Avatar src={conversation?.user_photo || undefined} alt={name} sx={{ width: 42, height: 42 }}>
-          {name.charAt(0).toUpperCase()}
-        </Avatar>
+        <Box sx={{ position: 'relative', flexShrink: 0 }}>
+          <Avatar
+            src={conversation?.user_photo || undefined}
+            alt={name}
+            sx={{ width: 46, height: 46, fontWeight: 600, color: 'primary.dark', bgcolor: 'primary.lighter' }}
+          >
+            {name.charAt(0).toUpperCase()}
+          </Avatar>
+          {conversation && (
+            <Box
+              sx={{
+                position: 'absolute',
+                right: 0,
+                bottom: 0,
+                width: 12,
+                height: 12,
+                borderRadius: '50%',
+                border: '2px solid',
+                borderColor: 'background.paper',
+                bgcolor: `${statusColor}.main`,
+              }}
+            />
+          )}
+        </Box>
         <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
           <Typography variant="subtitle1" noWrap>
             {conversation ? name : 'Loading…'}
@@ -372,8 +400,12 @@ export function ChatThread({ conversationId, initialConversation, onConversation
         </Box>
         {canOpenProfile && (
           <Tooltip title="View user profile">
-            <IconButton component={RouterLink} href={`/users/${conversation?.user_id}`}>
-              <UserRound size={20} />
+            <IconButton
+              component={RouterLink}
+              href={`/users/${conversation?.user_id}`}
+              sx={{ bgcolor: 'background.neutral' }}
+            >
+              <Iconify icon="solar:user-rounded-bold" width={20} />
             </IconButton>
           </Tooltip>
         )}
@@ -384,11 +416,26 @@ export function ChatThread({ conversationId, initialConversation, onConversation
             value={conversation.status}
             disabled={statusUpdating}
             onChange={(e) => handleStatusChange(e.target.value as ConversationStatus)}
-            sx={{ minWidth: 120 }}
+            sx={{
+              minWidth: 128,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 5,
+                fontWeight: 600,
+                fontSize: 13,
+                color: `${statusColor}.dark`,
+                bgcolor: `${statusColor}.lighter`,
+                '& fieldset': { borderColor: 'transparent' },
+              },
+            }}
           >
-            <MenuItem value="active">Active</MenuItem>
-            <MenuItem value="closed">Closed</MenuItem>
-            <MenuItem value="archived">Archived</MenuItem>
+            {(Object.keys(STATUS_META) as ConversationStatus[]).map((value) => (
+              <MenuItem key={value} value={value}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: `${STATUS_META[value].color}.main` }} />
+                  {STATUS_META[value].label}
+                </Box>
+              </MenuItem>
+            ))}
           </TextField>
         )}
       </Box>
@@ -401,8 +448,10 @@ export function ChatThread({ conversationId, initialConversation, onConversation
           minHeight: 0,
           overflowY: 'auto',
           px: { xs: 1.5, md: 3 },
-          py: 2,
+          py: 2.5,
           bgcolor: theme.vars.palette.background.neutral,
+          backgroundImage: `radial-gradient(${theme.vars.palette.divider} 1px, transparent 1px)`,
+          backgroundSize: '18px 18px',
         })}
       >
         {initialLoading ? (
@@ -425,8 +474,12 @@ export function ChatThread({ conversationId, initialConversation, onConversation
             </Button>
           </Box>
         ) : !messages.length ? (
-          <Box sx={{ textAlign: 'center', py: 6, color: 'text.secondary' }}>
-            <Typography variant="body2">No messages yet. Send the first message to {name}.</Typography>
+          <Box sx={{ textAlign: 'center', py: 8, color: 'text.secondary' }}>
+            <Iconify icon="solar:chat-line-bold-duotone" width={44} sx={{ color: 'primary.main', mb: 1 }} />
+            <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
+              No messages yet
+            </Typography>
+            <Typography variant="body2">Send the first message to {name}.</Typography>
           </Box>
         ) : (
           <>
@@ -447,11 +500,19 @@ export function ChatThread({ conversationId, initialConversation, onConversation
               return (
                 <Fragment key={message.client_message_id || message.id}>
                   {showSeparator && (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 1.5 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                       <Chip
                         size="small"
                         label={formatDateSeparator(message.created_at)}
-                        sx={{ bgcolor: 'background.paper', boxShadow: '0 1px 1px rgba(0,0,0,0.08)' }}
+                        sx={{
+                          px: 0.5,
+                          fontWeight: 600,
+                          fontSize: 11,
+                          letterSpacing: 0.3,
+                          color: 'text.secondary',
+                          bgcolor: 'background.paper',
+                          boxShadow: '0 2px 8px -2px rgba(15, 23, 42, 0.12)',
+                        }}
                       />
                     </Box>
                   )}
@@ -463,7 +524,7 @@ export function ChatThread({ conversationId, initialConversation, onConversation
         )}
       </Box>
 
-      <Box sx={{ px: 2, py: 1.25, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+      <Box sx={{ px: 2, py: 1.5, borderTop: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
         {pendingFile && (
           <Box
             sx={{
@@ -472,11 +533,13 @@ export function ChatThread({ conversationId, initialConversation, onConversation
               gap: 1,
               mb: 1,
               p: 1,
-              borderRadius: 1,
+              borderRadius: 1.5,
+              border: '1px solid',
+              borderColor: 'divider',
               bgcolor: 'background.neutral',
             }}
           >
-            <FileText size={18} />
+            <Iconify icon="solar:document-text-bold" width={18} sx={{ color: 'primary.main' }} />
             <Typography variant="body2" noWrap sx={{ flex: '1 1 auto' }}>
               {pendingFile.name}
             </Typography>
@@ -484,15 +547,32 @@ export function ChatThread({ conversationId, initialConversation, onConversation
               {formatFileSize(pendingFile.size)}
             </Typography>
             <IconButton size="small" onClick={() => setPendingFile(null)} aria-label="Remove attachment">
-              <X size={16} />
+              <Iconify icon="solar:close-linear" width={16} />
             </IconButton>
           </Box>
         )}
-        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            gap: 0.5,
+            p: 0.75,
+            borderRadius: 3,
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.neutral',
+            transition: 'border-color 160ms ease, box-shadow 160ms ease',
+            '&:focus-within': {
+              borderColor: 'primary.main',
+              bgcolor: 'background.paper',
+              boxShadow: (theme) => `0 0 0 3px ${theme.vars.palette.primary.lighter}`,
+            },
+          }}
+        >
           <input ref={fileInputRef} type="file" accept={FILE_ACCEPT} hidden onChange={handleFileChange} />
           <Tooltip title="Attach image or PDF (max 10MB)">
-            <IconButton onClick={() => fileInputRef.current?.click()} aria-label="Attach file">
-              <Paperclip size={20} />
+            <IconButton onClick={() => fileInputRef.current?.click()} aria-label="Attach file" sx={{ color: 'text.secondary' }}>
+              <Iconify icon="solar:paperclip-linear" width={20} />
             </IconButton>
           </Tooltip>
           <TextField
@@ -500,7 +580,8 @@ export function ChatThread({ conversationId, initialConversation, onConversation
             multiline
             maxRows={6}
             size="small"
-            placeholder={pendingFile ? 'Add a caption (optional)' : 'Type a message'}
+            variant="standard"
+            placeholder={pendingFile ? 'Add a caption (optional)' : 'Type a message…'}
             value={text}
             onChange={(e) => setText(e.target.value.slice(0, MAX_MESSAGE_LENGTH))}
             onKeyDown={(e) => {
@@ -510,15 +591,33 @@ export function ChatThread({ conversationId, initialConversation, onConversation
               }
             }}
             helperText={text.length > MAX_MESSAGE_LENGTH - 200 ? `${text.length}/${MAX_MESSAGE_LENGTH}` : undefined}
-            slotProps={{ htmlInput: { maxLength: MAX_MESSAGE_LENGTH } }}
+            sx={{ alignSelf: 'center', py: 0.75 }}
+            slotProps={{
+              input: { disableUnderline: true },
+              htmlInput: { maxLength: MAX_MESSAGE_LENGTH },
+            }}
           />
           <IconButton
-            color="primary"
             onClick={handleSend}
             disabled={!text.trim() && !pendingFile}
             aria-label="Send"
+            sx={(theme) => ({
+              width: 40,
+              height: 40,
+              flexShrink: 0,
+              color: 'common.white',
+              background: `linear-gradient(135deg, ${theme.vars.palette.primary.light}, ${theme.vars.palette.primary.dark})`,
+              boxShadow: `0 6px 14px -6px ${theme.vars.palette.primary.main}`,
+              transition: 'transform 160ms ease',
+              '&:hover': { transform: 'scale(1.06)' },
+              '&.Mui-disabled': {
+                color: theme.vars.palette.text.disabled,
+                background: theme.vars.palette.action.disabledBackground,
+                boxShadow: 'none',
+              },
+            })}
           >
-            <Send size={20} />
+            <Iconify icon="solar:plain-bold" width={20} />
           </IconButton>
         </Box>
       </Box>
@@ -531,7 +630,7 @@ export function ChatThread({ conversationId, initialConversation, onConversation
               sx={{ position: 'absolute', top: 8, right: 8, color: 'common.white', bgcolor: 'rgba(0,0,0,0.4)' }}
               aria-label="Close"
             >
-              <X size={20} />
+              <Iconify icon="solar:close-linear" width={20} />
             </IconButton>
             <Box
               component="img"

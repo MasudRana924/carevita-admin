@@ -14,7 +14,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { useSnackbar } from 'src/components/snackbar';
 import { Breadcrumb } from 'src/components/breadcrumb';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -98,7 +98,7 @@ export function NewCategoryView() {
           variant="outlined"
           size="large"
           onClick={() => router.push('/dashboard/categories')}
-          startIcon={<LucideIcon icon="eva:arrow-back-fill" />}
+          startIcon={<Iconify icon="solar:arrow-left-linear" />}
           sx={{
             borderColor: 'grey.400',
             color: 'grey.700',
@@ -192,7 +192,7 @@ export function NewCategoryView() {
               >
                 {!imagePreview && (
                   <Box sx={{ textAlign: 'center' }}>
-                    <LucideIcon icon="eva:image-fill" sx={{ fontSize: 48, color: '#ccc', mb: 1 }} />
+                    <Iconify icon="solar:gallery-bold" sx={{ fontSize: 48, color: '#ccc', mb: 1 }} />
                     <Typography variant="body2" color="text.secondary">
                       Click to upload image
                     </Typography>

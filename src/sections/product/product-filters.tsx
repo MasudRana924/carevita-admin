@@ -14,7 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import FormControlLabel from '@mui/material/FormControlLabel';
 
 import { Scrollbar } from 'src/components/scrollbar';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 import { ColorPicker } from 'src/components/color-utils';
 
 // ----------------------------------------------------------------------
@@ -173,7 +173,7 @@ export function ProductFilters({
         color="inherit"
         endIcon={
           <Badge color="error" variant="dot" invisible={!canReset}>
-            <LucideIcon icon="ic:round-filter-list" />
+            <Iconify icon="solar:filter-bold" />
           </Badge>
         }
         onClick={onOpenFilter}
@@ -206,12 +206,12 @@ export function ProductFilters({
 
           <IconButton onClick={onResetFilter}>
             <Badge color="error" variant="dot" invisible={!canReset}>
-              <LucideIcon icon="solar:restart-bold" />
+              <Iconify icon="solar:restart-bold" />
             </Badge>
           </IconButton>
 
           <IconButton onClick={onCloseFilter}>
-            <LucideIcon icon="mingcute:close-line" />
+            <Iconify icon="solar:close-linear" />
           </IconButton>
         </Box>
 

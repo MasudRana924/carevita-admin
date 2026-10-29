@@ -22,7 +22,7 @@ import { fToNow } from 'src/utils/format-time';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { Breadcrumb } from 'src/components/breadcrumb';
 import { Scrollbar } from 'src/components/scrollbar';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 import { _notifications } from 'src/_mock';
 
@@ -131,7 +131,7 @@ export default function NotificationsPage() {
                   variant="outlined"
                   size="small"
                   onClick={handleMarkAllAsRead}
-                  startIcon={<LucideIcon icon="eva:done-all-fill" />}
+                  startIcon={<Iconify icon="solar:check-read-linear" />}
                 >
                   Mark all read
                 </Button>
@@ -185,7 +185,7 @@ export default function NotificationsPage() {
 
           {filteredNotifications.length === 0 && (
             <Box sx={{ textAlign: 'center', py: 8 }}>
-              <LucideIcon 
+              <Iconify 
                 icon="solar:bell-off-bold-duotone" 
                 width={64} 
                 sx={{ color: 'text.disabled', mb: 2 }} 
@@ -254,7 +254,7 @@ function NotificationItem({
                 color: 'text.disabled',
               }}
             >
-              <LucideIcon width={14} icon="solar:clock-circle-outline" />
+              <Iconify width={14} icon="solar:clock-circle-outline" />
               {fToNow(notification.postedAt)}
             </Typography>
             
@@ -268,7 +268,7 @@ function NotificationItem({
                       onMarkAsRead(notification.id);
                     }}
                   >
-                    <LucideIcon icon="eva:checkmark-fill" width={16} />
+                    <Iconify icon="solar:check-read-linear" width={16} />
                   </IconButton>
                 </Tooltip>
               )}
@@ -282,7 +282,7 @@ function NotificationItem({
                   }}
                   sx={{ color: 'error.main' }}
                 >
-                  <LucideIcon icon="solar:trash-bin-trash-bold" width={16} />
+                  <Iconify icon="solar:trash-bin-trash-bold" width={16} />
                 </IconButton>
               </Tooltip>
             </Box>

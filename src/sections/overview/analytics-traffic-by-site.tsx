@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 
 import { fShortenNumber } from 'src/utils/format-number';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -44,10 +44,10 @@ export function AnalyticsTrafficBySite({ title, subheader, list, sx, ...other }:
               border: `solid 1px ${varAlpha(theme.vars.palette.grey['500Channel'], 0.12)}`,
             })}
           >
-            {site.value === 'twitter' && <LucideIcon width={32} icon="socials:twitter" />}
-            {site.value === 'facebook' && <LucideIcon width={32} icon="socials:facebook" />}
-            {site.value === 'google' && <LucideIcon width={32} icon="socials:google" />}
-            {site.value === 'linkedin' && <LucideIcon width={32} icon="socials:linkedin" />}
+            {site.value === 'twitter' && <Iconify width={32} icon="solar:global-bold" />}
+            {site.value === 'facebook' && <Iconify width={32} icon="solar:global-bold" />}
+            {site.value === 'google' && <Iconify width={32} icon="solar:global-bold" />}
+            {site.value === 'linkedin' && <Iconify width={32} icon="solar:global-bold" />}
 
             <Typography variant="h6" sx={{ mt: 1 }}>
               {fShortenNumber(site.total)}

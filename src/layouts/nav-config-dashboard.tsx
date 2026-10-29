@@ -1,25 +1,12 @@
 import type { ReactNode } from 'react';
-import {
-  ClipboardList,
-  FileText,
-  Handshake,
-  Hospital,
-  LayoutDashboard,
-  MessageSquare,
-  Scale,
-  ScrollText,
-  Settings,
-  ShieldAlert,
-  UserRound,
-  Users,
-  Wallet,
-} from 'lucide-react';
+
+import { Iconify } from 'src/components/iconify';
 
 export type NavItem = {
   title: string;
   path: string;
   icon: ReactNode;
-  badge?: 'supportChatUnread';
+  badge?: 'supportChatUnread' | 'caregiversPendingReview';
 };
 
 export type NavGroup = {
@@ -27,20 +14,25 @@ export type NavGroup = {
   items: NavItem[];
 };
 
-const iconSx = { width: 22, height: 22 };
+const icon = (name: string) => <Iconify icon={name} width={22} />;
 
 export const navGroups: NavGroup[] = [
   {
     subheader: 'Main',
-    items: [{ title: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard style={iconSx} /> }],
+    items: [{ title: 'Dashboard', path: '/dashboard', icon: icon('solar:widget-5-bold-duotone') }],
   },
   {
     subheader: 'Management',
     items: [
-      { title: 'Users', path: '/users', icon: <Users style={iconSx} /> },
-      { title: 'Caregivers', path: '/caregivers', icon: <Handshake style={iconSx} /> },
-      { title: 'Hospitals', path: '/hospitals', icon: <Hospital style={iconSx} /> },
-      { title: 'Bookings', path: '/bookings', icon: <ClipboardList style={iconSx} /> },
+      { title: 'Users', path: '/users', icon: icon('solar:users-group-rounded-bold-duotone') },
+      {
+        title: 'Caregivers',
+        path: '/caregivers',
+        icon: icon('solar:hand-heart-bold-duotone'),
+        badge: 'caregiversPendingReview',
+      },
+      { title: 'Hospitals', path: '/hospitals', icon: icon('solar:hospital-bold-duotone') },
+      { title: 'Bookings', path: '/bookings', icon: icon('solar:clipboard-list-bold-duotone') },
     ],
   },
   {
@@ -49,21 +41,21 @@ export const navGroups: NavGroup[] = [
       {
         title: 'Support Chat',
         path: '/support-chat',
-        icon: <MessageSquare style={iconSx} />,
+        icon: icon('solar:chat-round-dots-bold-duotone'),
         badge: 'supportChatUnread',
       },
-      { title: 'Disputes', path: '/disputes', icon: <Scale style={iconSx} /> },
-      { title: 'Withdrawals', path: '/withdrawals', icon: <Wallet style={iconSx} /> },
-      { title: 'Safety incidents', path: '/safety-incidents', icon: <ShieldAlert style={iconSx} /> },
-      { title: 'Audit log', path: '/audit-logs', icon: <ScrollText style={iconSx} /> },
+      { title: 'Disputes', path: '/disputes', icon: icon('solar:scale-bold-duotone') },
+      { title: 'Withdrawals', path: '/withdrawals', icon: icon('solar:wallet-money-bold-duotone') },
+      { title: 'Safety incidents', path: '/safety-incidents', icon: icon('solar:shield-warning-bold-duotone') },
+      { title: 'Audit log', path: '/audit-logs', icon: icon('solar:history-bold-duotone') },
     ],
   },
   {
     subheader: 'System',
     items: [
-      { title: 'Privacy policies', path: '/privacy-policies', icon: <FileText style={iconSx} /> },
-      { title: 'Admin Profile', path: '/profile', icon: <UserRound style={iconSx} /> },
-      { title: 'Settings', path: '/settings', icon: <Settings style={iconSx} /> },
+      { title: 'Privacy policies', path: '/privacy-policies', icon: icon('solar:shield-keyhole-bold-duotone') },
+      { title: 'Admin Profile', path: '/profile', icon: icon('solar:user-circle-bold-duotone') },
+      { title: 'Settings', path: '/settings', icon: icon('solar:settings-bold-duotone') },
     ],
   },
 ];

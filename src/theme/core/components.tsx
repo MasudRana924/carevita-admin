@@ -164,11 +164,56 @@ const MuiPaper: Components<Theme>['MuiPaper'] = {
 
 const MuiTableCell: Components<Theme>['MuiTableCell'] = {
   styleOverrides: {
+    root: ({ theme }) => ({
+      borderBottom: `1px dashed ${varAlpha(theme.vars.palette.grey['500Channel'], 0.28)}`,
+    }),
     head: ({ theme }) => ({
-      fontSize: theme.typography.pxToRem(14),
+      fontSize: theme.typography.pxToRem(12),
       color: theme.vars.palette.text.secondary,
-      fontWeight: theme.typography.fontWeightSemiBold,
+      fontWeight: theme.typography.fontWeightBold,
+      letterSpacing: '0.04em',
+      textTransform: 'uppercase',
+      whiteSpace: 'nowrap',
+      paddingTop: theme.spacing(1.5),
+      paddingBottom: theme.spacing(1.5),
+      borderBottom: 'none',
       backgroundColor: theme.vars.palette.background.neutral,
+      '& .MuiTableSortLabel-root.Mui-active': { color: theme.vars.palette.text.primary },
+    }),
+    body: ({ theme }) => ({
+      ...theme.typography.body2,
+      color: theme.vars.palette.text.primary,
+    }),
+  },
+};
+
+const MuiTableRow: Components<Theme>['MuiTableRow'] = {
+  styleOverrides: {
+    root: ({ theme }) => ({
+      transition: theme.transitions.create(['background-color'], { duration: 160 }),
+      '&.MuiTableRow-hover:hover': {
+        backgroundColor: varAlpha(theme.vars.palette.primary.mainChannel, 0.04),
+      },
+      '&.Mui-selected': {
+        backgroundColor: varAlpha(theme.vars.palette.primary.mainChannel, 0.08),
+        '&:hover': { backgroundColor: varAlpha(theme.vars.palette.primary.mainChannel, 0.12) },
+      },
+    }),
+  },
+};
+
+const MuiTablePagination: Components<Theme>['MuiTablePagination'] = {
+  styleOverrides: {
+    root: { borderTop: 'none' },
+    selectLabel: ({ theme }) => ({ ...theme.typography.body2, color: theme.vars.palette.text.secondary }),
+    displayedRows: ({ theme }) => ({ ...theme.typography.body2, color: theme.vars.palette.text.secondary }),
+    actions: ({ theme }) => ({
+      '& .MuiIconButton-root': {
+        borderRadius: theme.shape.borderRadius,
+        border: `1px solid ${varAlpha(theme.vars.palette.grey['500Channel'], 0.24)}`,
+        marginLeft: theme.spacing(0.5),
+        padding: 4,
+      },
     }),
   },
 };
@@ -287,6 +332,8 @@ export const components = {
   MuiMenuItem,
   MuiCheckbox,
   MuiTableCell,
+  MuiTableRow,
+  MuiTablePagination,
   MuiCardHeader,
   MuiOutlinedInput,
   MuiFormControlLabel,

@@ -4,10 +4,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import { MessagesSquare } from 'lucide-react';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { Breadcrumb } from 'src/components/breadcrumb';
 import { getErrorMessage } from 'src/lib/utils';
 import { adminConversationsService } from 'src/api/admin-services';
 
@@ -17,6 +17,7 @@ import { ChatThread } from './chat-thread';
 import { InboxList, type InboxTab } from './inbox-list';
 import { useRefreshUnreadSummary, useUnreadSummary } from './use-unread-summary';
 import { INBOX_PAGE_SIZE, INBOX_POLL_MS, sortConversations, useVisiblePolling } from './utils';
+import { Iconify } from 'src/components/iconify';
 
 export function SupportChatView() {
   const { conversationId } = useParams<{ conversationId?: string }>();
@@ -146,18 +147,29 @@ export function SupportChatView() {
   );
 
   return (
-    <DashboardContent maxWidth={false} sx={{ pb: 2 }}>
+    <DashboardContent
+      sx={{
+        pb: 2,
+        height: {
+          xs: 'calc(100dvh - var(--layout-header-mobile-height))',
+          md: 'calc(100dvh - var(--layout-header-desktop-height))',
+        },
+      }}
+    >
+      <Breadcrumb
+        title="Support chat"
+        items={[{ title: 'Dashboard', href: '/dashboard' }, { title: 'Support chat' }]}
+      />
+
       <Card
         sx={{
           display: 'flex',
+          flex: '1 1 auto',
           overflow: 'hidden',
           border: 1,
           borderColor: 'divider',
-          boxShadow: 'none',
-          height: {
-            xs: 'calc(100dvh - var(--layout-header-mobile-height) - 24px)',
-            md: 'calc(100dvh - var(--layout-header-desktop-height) - 24px)',
-          },
+          borderRadius: 2.5,
+          boxShadow: '0 24px 48px -24px rgba(15, 23, 42, 0.18)',
           minHeight: 480,
         }}
       >
@@ -212,18 +224,41 @@ export function SupportChatView() {
             <Box
               sx={(theme) => ({
                 height: 1,
+                px: 3,
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
+                textAlign: 'center',
                 gap: 1,
                 color: 'text.secondary',
                 bgcolor: theme.vars.palette.background.neutral,
+                backgroundImage: `radial-gradient(${theme.vars.palette.divider} 1px, transparent 1px)`,
+                backgroundSize: '18px 18px',
               })}
             >
-              <MessagesSquare size={48} style={{ opacity: 0.4 }} />
-              <Typography variant="subtitle1">Select a conversation</Typography>
-              <Typography variant="body2">Choose a user from the inbox to view and reply to their messages.</Typography>
+              <Box
+                sx={{
+                  mb: 1.5,
+                  width: 96,
+                  height: 96,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '50%',
+                  color: 'primary.main',
+                  bgcolor: 'primary.lighter',
+                  boxShadow: (theme) => `0 0 0 12px ${theme.vars.palette.background.paper}`,
+                }}
+              >
+                <Iconify icon="solar:chat-round-dots-bold-duotone" width={48} />
+              </Box>
+              <Typography variant="h6" sx={{ color: 'text.primary' }}>
+                Select a conversation
+              </Typography>
+              <Typography variant="body2" sx={{ maxWidth: 360 }}>
+                Choose a user from the inbox to view and reply to their messages.
+              </Typography>
             </Box>
           )}
         </Box>

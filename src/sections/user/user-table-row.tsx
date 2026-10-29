@@ -13,7 +13,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 import { useRouter } from 'src/routes/hooks';
 
 import { Label } from 'src/components/label';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -76,7 +76,7 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
 
         <TableCell align="center">
           {row.isVerified ? (
-            <LucideIcon width={22} icon="solar:check-circle-bold" sx={{ color: 'success.main' }} />
+            <Iconify width={22} icon="solar:check-circle-bold" sx={{ color: 'success.main' }} />
           ) : (
             '-'
           )}
@@ -88,7 +88,7 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
-            <LucideIcon icon="eva:more-vertical-fill" />
+            <Iconify icon="solar:menu-dots-vertical-bold" />
           </IconButton>
         </TableCell>
       </TableRow>
@@ -117,12 +117,12 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
           }}
         >
           <MenuItem onClick={handleEdit}>
-            <LucideIcon icon="solar:pen-bold" />
+            <Iconify icon="solar:pen-bold" />
             Edit
           </MenuItem>
 
           <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
-            <LucideIcon icon="solar:trash-bin-trash-bold" />
+            <Iconify icon="solar:trash-bin-trash-bold" />
             Delete
           </MenuItem>
         </MenuList>

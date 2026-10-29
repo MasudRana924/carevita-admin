@@ -7,7 +7,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 import { _departments } from 'src/_mock/_data';
 
 // ----------------------------------------------------------------------
@@ -98,7 +98,7 @@ export function EmployeesTableToolbar({
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <LucideIcon icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                <Iconify icon="solar:magnifer-linear" sx={{ color: 'text.disabled' }} />
               </InputAdornment>
             ),
           }}
@@ -232,7 +232,7 @@ export function EmployeesTableToolbar({
         <Button
           color="error"
           variant="outlined"
-          startIcon={<LucideIcon icon="eva:trash-2-fill" />}
+          startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
           sx={{
             borderRadius: 2,
             px: 3,
@@ -255,7 +255,7 @@ export function EmployeesTableToolbar({
         <Button
           color="error"
           variant="outlined"
-          startIcon={<LucideIcon icon="eva:close-fill" />}
+          startIcon={<Iconify icon="solar:close-circle-bold" />}
           onClick={handleClearFilters}
           sx={{
             borderRadius: 2,

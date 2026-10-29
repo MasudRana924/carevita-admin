@@ -14,7 +14,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { useRouter } from 'src/routes/hooks';
 
 import { Label } from 'src/components/label';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -296,7 +296,7 @@ export function OrderTableRow({ row, selected, onSelectRow }: OrderTableRowProps
             },
           }}
         >
-          <LucideIcon icon="eva:eye-fill" sx={{ fontSize: 18 }} />
+          <Iconify icon="solar:eye-bold" sx={{ fontSize: 18 }} />
         </IconButton>
       </TableCell>
     </TableRow>

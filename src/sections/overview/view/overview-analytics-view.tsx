@@ -44,7 +44,7 @@ export function OverviewAnalyticsView() {
   const totalOvertimeHours = _attendance.reduce((sum, record) => sum + record.overtime, 0);
 
   return (
-    <DashboardContent maxWidth="xl">
+    <DashboardContent>
       <Typography variant="h4" sx={{ mb: { xs: 3, md: 5 } }}>
         Hi, Welcome back 👋
       </Typography>

@@ -21,7 +21,7 @@ import { fToNow } from 'src/utils/format-time';
 
 import { useRouter } from 'src/routes/hooks';
 import { Scrollbar } from 'src/components/scrollbar';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
         {...other}
       >
         <Badge badgeContent={totalUnRead} color="error">
-          <LucideIcon width={24} icon="solar:bell-bing-bold-duotone" />
+          <Iconify width={24} icon="solar:bell-bing-bold-duotone" />
         </Badge>
       </IconButton>
 
@@ -118,7 +118,7 @@ export function NotificationsPopover({ data = [], sx, ...other }: NotificationsP
           {totalUnRead > 0 && (
             <Tooltip title=" Mark all as read">
               <IconButton color="primary" onClick={handleMarkAllAsRead}>
-                <LucideIcon icon="eva:done-all-fill" />
+                <Iconify icon="solar:check-read-linear" />
               </IconButton>
             </Tooltip>
           )}
@@ -198,7 +198,7 @@ function NotificationItem({ notification }: { notification: NotificationItemProp
               color: 'text.disabled',
             }}
           >
-            <LucideIcon width={14} icon="solar:clock-circle-outline" />
+            <Iconify width={14} icon="solar:clock-circle-outline" />
             {fToNow(notification.postedAt)}
           </Typography>
         }

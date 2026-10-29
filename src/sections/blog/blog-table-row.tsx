@@ -16,7 +16,7 @@ import { useRouter } from 'src/routes/hooks';
 import { fDate } from 'src/utils/format-time';
 import { fShortenNumber } from 'src/utils/format-number';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -124,7 +124,7 @@ export function BlogTableRow({ row, selected, onSelectRow }: BlogTableRowCompone
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
-            <LucideIcon icon="eva:more-vertical-fill" />
+            <Iconify icon="solar:menu-dots-vertical-bold" />
           </IconButton>
         </TableCell>
       </TableRow>
@@ -153,12 +153,12 @@ export function BlogTableRow({ row, selected, onSelectRow }: BlogTableRowCompone
           }}
         >
           <MenuItem onClick={handleEdit}>
-            <LucideIcon icon="solar:pen-bold" />
+            <Iconify icon="solar:pen-bold" />
             Edit
           </MenuItem>
 
           <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-            <LucideIcon icon="solar:trash-bin-trash-bold" />
+            <Iconify icon="solar:trash-bin-trash-bold" />
             Delete
           </MenuItem>
         </MenuList>

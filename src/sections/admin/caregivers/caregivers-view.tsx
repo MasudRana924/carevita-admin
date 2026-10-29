@@ -1,7 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import Table from '@mui/material/Table';
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
@@ -13,24 +17,60 @@ import Typography from '@mui/material/Typography';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
+import { Label } from 'src/components/label';
 import { Scrollbar } from 'src/components/scrollbar';
 import { Breadcrumb } from 'src/components/breadcrumb';
 import { TableNoData } from 'src/components/table-no-data';
 import { ConfirmDialog } from 'src/components/custom-dialog';
+import { EmptyState, ErrorState, TableSkeleton } from 'src/components/page-states';
 import { useSnackbar } from 'src/components/snackbar';
-import { useCaregivers } from 'src/hooks/useAdminApi';
+import { adminCaregiversService } from 'src/api/admin-services';
+import { getErrorMessage } from 'src/lib/utils';
+
+import type { CaregiversQueryParams, CaregiverVerificationStatus } from 'src/api/admin-types';
 
 import { CaregiverTableRow } from './caregiver-table-row';
 import { CaregiverTableHead } from './caregiver-table-head';
 import { CaregiverTableToolbar } from './caregiver-table-toolbar';
+import { usePendingReviewCount } from './use-pending-review-count';
+import { CAREGIVERS_QUERY_KEY, caregiverVerificationQueryKey } from './verification-utils';
 
 import type { CaregiverTableRowProps } from './caregiver-table-row';
 
 // ----------------------------------------------------------------------
 
+type CaregiverTab = 'all' | 'pending';
+
+const TABLE_HEAD = [
+  { id: 'name', label: 'Caregiver' },
+  { id: 'phone', label: 'Phone' },
+  { id: 'district', label: 'District' },
+  { id: 'experience', label: 'Experience' },
+  { id: 'hourly_rate', label: 'Hourly Rate' },
+  { id: 'verification_status', label: 'Verification' },
+  { id: 'ekyc_session_status', label: 'Didit eKYC' },
+  { id: 'documents_count', label: 'Documents' },
+  { id: 'documents_submitted_at', label: 'Docs submitted' },
+  { id: 'is_available', label: 'Availability' },
+  { id: 'rating', label: 'Rating' },
+  { id: 'completed_bookings', label: 'Bookings' },
+  { id: 'created_at', label: 'Created At' },
+  { id: 'actions', label: '' },
+];
+
+const COL_SPAN = TABLE_HEAD.length + 1;
+
+function submittedAtValue(row: CaregiverTableRowProps) {
+  return row.documents_submitted_at ? new Date(row.documents_submitted_at).getTime() : null;
+}
+
 export function CaregiversView() {
   const { showSnackbar } = useSnackbar();
-  const table = useTable();
+  const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab: CaregiverTab = searchParams.get('tab') === 'pending' ? 'pending' : 'all';
+  const isPendingTab = tab === 'pending';
+  const table = useTable(isPendingTab ? 'documents_submitted_at' : 'name');
 
   const [filterName, setFilterName] = useState('');
   const [verificationFilter, setVerificationFilter] = useState('');
@@ -38,21 +78,64 @@ export function CaregiversView() {
   const [ekycSessionFilter, setEkycSessionFilter] = useState('');
   const [confirm, setConfirm] = useState<{ type: 'block' | 'unblock'; id: string } | null>(null);
 
-  const { caregivers, loading, error, meta, refetch, blockCaregiver, unblockCaregiver } = useCaregivers({
-    verification_status: (verificationFilter || undefined) as any,
-    ekyc_session_status: ekycSessionFilter || undefined,
-    page: table.page + 1,
-    limit: table.rowsPerPage,
+  const { count: pendingCount } = usePendingReviewCount();
+
+  const params: CaregiversQueryParams = isPendingTab
+    ? { pending_review: true, page: table.page + 1, limit: table.rowsPerPage }
+    : {
+        verification_status: (verificationFilter || undefined) as CaregiverVerificationStatus | undefined,
+        ekyc_session_status: ekycSessionFilter || undefined,
+        page: table.page + 1,
+        limit: table.rowsPerPage,
+      };
+
+  const query = useQuery({
+    queryKey: [...CAREGIVERS_QUERY_KEY, 'list', params],
+    queryFn: () => adminCaregiversService.getCaregivers(params),
+    placeholderData: keepPreviousData,
+    staleTime: 30_000,
   });
 
-  const dataFiltered: CaregiverTableRowProps[] = caregivers.filter(
-    (caregiver) =>
-      caregiver.name.toLowerCase().includes(filterName.toLowerCase()) ||
-      caregiver.email.toLowerCase().includes(filterName.toLowerCase()) ||
-      caregiver.phone.includes(filterName)
-  );
+  const caregivers = useMemo(() => query.data?.data ?? [], [query.data]);
+  const total = query.data?.meta.total ?? 0;
+
+  const dataFiltered = useMemo(() => {
+    const term = filterName.toLowerCase();
+    const rows = caregivers.filter((caregiver) => {
+      const matchesSearch =
+        !term ||
+        caregiver.name?.toLowerCase().includes(term) ||
+        caregiver.email?.toLowerCase().includes(term) ||
+        caregiver.phone?.includes(filterName);
+      if (!matchesSearch) return false;
+      if (availabilityFilter === 'available') return caregiver.is_available;
+      if (availabilityFilter === 'unavailable') return !caregiver.is_available;
+      return true;
+    });
+
+    if (table.orderBy !== 'documents_submitted_at') return rows;
+
+    const direction = table.order === 'asc' ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const left = submittedAtValue(a);
+      const right = submittedAtValue(b);
+      if (left === right) return 0;
+      if (left === null) return 1;
+      if (right === null) return -1;
+      return (left - right) * direction;
+    });
+  }, [caregivers, filterName, availabilityFilter, table.orderBy, table.order]);
 
   const notFound = !dataFiltered.length && !!filterName;
+
+  const handleTabChange = useCallback(
+    (_event: React.SyntheticEvent, value: CaregiverTab) => {
+      setSearchParams(value === 'pending' ? { tab: 'pending' } : {}, { replace: true });
+      table.onResetPage();
+      table.onResetSort(value === 'pending' ? 'documents_submitted_at' : 'name');
+    },
+    [setSearchParams, table]
+  );
 
   const handleClearFilters = useCallback(() => {
     setFilterName('');
@@ -70,33 +153,74 @@ export function CaregiversView() {
     [table]
   );
 
-  const handleBlockCaregiver = useCallback((id: string) => {
-    setConfirm({ type: 'block', id });
-  }, []);
-
-  const handleUnblockCaregiver = useCallback((id: string) => {
-    setConfirm({ type: 'unblock', id });
-  }, []);
-
-  const handleConfirm = useCallback(async () => {
-    if (!confirm) return;
-    try {
-      if (confirm.type === 'block') {
-        await blockCaregiver(confirm.id);
-        showSnackbar('Caregiver blocked successfully', 'success');
-      } else {
-        await unblockCaregiver(confirm.id);
-        showSnackbar('Caregiver unblocked successfully', 'success');
-      }
+  const blockMutation = useMutation({
+    mutationFn: ({ type, id }: { type: 'block' | 'unblock'; id: string }) =>
+      type === 'block' ? adminCaregiversService.blockCaregiver(id) : adminCaregiversService.unblockCaregiver(id),
+    onSuccess: (_result, variables) => {
+      showSnackbar(
+        variables.type === 'block' ? 'Caregiver blocked successfully' : 'Caregiver unblocked successfully',
+        'success'
+      );
       setConfirm(null);
-    } catch (err: any) {
-      showSnackbar(err.message || 'Failed to update caregiver', 'error');
-    }
-  }, [confirm, blockCaregiver, unblockCaregiver, showSnackbar]);
+      queryClient.invalidateQueries({ queryKey: CAREGIVERS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: caregiverVerificationQueryKey(variables.id) });
+    },
+    onError: (error) => showSnackbar(getErrorMessage(error, 'Failed to update caregiver'), 'error'),
+  });
 
-  useEffect(() => {
-    refetch();
-  }, [verificationFilter, availabilityFilter, ekycSessionFilter, table.page, table.rowsPerPage]);
+  const renderBody = () => {
+    if (query.isLoading) {
+      return (
+        <TableRow>
+          <TableCell colSpan={COL_SPAN} sx={{ p: 0 }}>
+            <TableSkeleton rows={table.rowsPerPage} />
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    if (query.error) {
+      return (
+        <TableRow>
+          <TableCell colSpan={COL_SPAN}>
+            <ErrorState message={getErrorMessage(query.error)} onRetry={() => query.refetch()} />
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    if (notFound) {
+      return <TableNoData colSpan={COL_SPAN} searchQuery={filterName} onClearFilters={handleClearFilters} />;
+    }
+
+    if (!dataFiltered.length) {
+      return (
+        <TableRow>
+          <TableCell colSpan={COL_SPAN}>
+            {isPendingTab ? (
+              <EmptyState
+                title="No caregivers awaiting approval"
+                description="Caregivers appear here once they have uploaded documents and Didit has approved their identity."
+              />
+            ) : (
+              <EmptyState title="No caregivers found" description="Try changing or clearing the filters." />
+            )}
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return dataFiltered.map((row) => (
+      <CaregiverTableRow
+        key={row.id}
+        row={row}
+        selected={table.selected.includes(row.id)}
+        onSelectRow={() => table.onSelectRow(row.id)}
+        onBlockCaregiver={(id) => setConfirm({ type: 'block', id })}
+        onUnblockCaregiver={(id) => setConfirm({ type: 'unblock', id })}
+      />
+    ));
+  };
 
   return (
     <DashboardContent>
@@ -109,12 +233,29 @@ export function CaregiversView() {
       />
 
       <Card>
+        <Tabs value={tab} onChange={handleTabChange} sx={{ px: 3 }}>
+          <Tab value="all" label="All caregivers" />
+          <Tab
+            value="pending"
+            iconPosition="end"
+            label="Pending approval"
+            icon={
+              pendingCount > 0 ? (
+                <Label variant="filled" color="warning" sx={{ ml: 1 }}>
+                  {pendingCount > 99 ? '99+' : pendingCount}
+                </Label>
+              ) : undefined
+            }
+          />
+        </Tabs>
+
         <CaregiverTableToolbar
           numSelected={table.selected.length}
           filterName={filterName}
           verificationFilter={verificationFilter}
           availabilityFilter={availabilityFilter}
           ekycSessionFilter={ekycSessionFilter}
+          hideStatusFilters={isPendingTab}
           onFilterName={(event: React.ChangeEvent<HTMLInputElement>) => {
             setFilterName(event.target.value);
             table.onResetPage();
@@ -133,7 +274,7 @@ export function CaregiversView() {
 
         <Scrollbar>
           <TableContainer sx={{ overflow: 'unset' }}>
-            <Table sx={{ minWidth: 960 }}>
+            <Table sx={{ '& .MuiTableCell-root': { whiteSpace: 'nowrap' } }}>
               <CaregiverTableHead
                 order={table.order}
                 orderBy={table.orderBy}
@@ -146,55 +287,9 @@ export function CaregiversView() {
                     dataFiltered.map((caregiver) => caregiver.id)
                   )
                 }
-                headLabel={[
-                  { id: 'name', label: 'Caregiver' },
-                  { id: 'phone', label: 'Phone' },
-                  { id: 'district', label: 'District' },
-                  { id: 'experience', label: 'Experience' },
-                  { id: 'hourly_rate', label: 'Hourly Rate' },
-                  { id: 'verification_status', label: 'Verification' },
-                  { id: 'ekyc_session_status', label: 'eKYC' },
-                  { id: 'is_available', label: 'Availability' },
-                  { id: 'rating', label: 'Rating' },
-                  { id: 'completed_bookings', label: 'Bookings' },
-                  { id: 'created_at', label: 'Created At' },
-                  { id: 'actions', label: '' },
-                ]}
+                headLabel={TABLE_HEAD}
               />
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={13} align="center">
-                      <Box sx={{ py: 3 }}>Loading...</Box>
-                    </TableCell>
-                  </TableRow>
-                ) : error ? (
-                  <TableRow>
-                    <TableCell colSpan={13} align="center">
-                      <Box sx={{ py: 3, color: 'error.main' }}>{error}</Box>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  dataFiltered
-                    .filter((row) => {
-                      if (availabilityFilter === 'available') return row.is_available;
-                      if (availabilityFilter === 'unavailable') return !row.is_available;
-                      return true;
-                    })
-                    .map((row) => (
-                      <CaregiverTableRow
-                        key={row.id}
-                        row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onBlockCaregiver={handleBlockCaregiver}
-                        onUnblockCaregiver={handleUnblockCaregiver}
-                      />
-                    ))
-                )}
-
-                {notFound && <TableNoData searchQuery={filterName} onClearFilters={handleClearFilters} />}
-              </TableBody>
+              <TableBody>{renderBody()}</TableBody>
             </Table>
           </TableContainer>
         </Scrollbar>
@@ -202,7 +297,7 @@ export function CaregiversView() {
         <TablePagination
           component="div"
           page={table.page}
-          count={meta.total}
+          count={total}
           rowsPerPage={table.rowsPerPage}
           onPageChange={table.onChangePage}
           rowsPerPageOptions={[5, 10, 25]}
@@ -212,20 +307,21 @@ export function CaregiversView() {
 
       <ConfirmDialog
         open={!!confirm}
-        onClose={() => setConfirm(null)}
+        onClose={() => !blockMutation.isPending && setConfirm(null)}
         title={confirm?.type === 'block' ? 'Block caregiver' : 'Unblock caregiver'}
         content={
           <Typography>
             {confirm?.type === 'block'
-              ? 'Block this caregiver account?'
-              : 'Unblock this caregiver account?'}
+              ? 'Block this caregiver account? They will be suspended and cannot be booked.'
+              : 'Unblock this caregiver account? They return to APPROVED only if an admin approved them before; otherwise they go back to PENDING review.'}
           </Typography>
         }
         action={
           <Button
             variant="contained"
             color={confirm?.type === 'block' ? 'error' : 'success'}
-            onClick={handleConfirm}
+            disabled={blockMutation.isPending}
+            onClick={() => confirm && blockMutation.mutate(confirm)}
           >
             {confirm?.type === 'block' ? 'Block' : 'Unblock'}
           </Button>
@@ -237,9 +333,9 @@ export function CaregiversView() {
 
 // ----------------------------------------------------------------------
 
-export function useTable() {
+export function useTable(defaultOrderBy = 'name') {
   const [page, setPage] = useState(0);
-  const [orderBy, setOrderBy] = useState('name');
+  const [orderBy, setOrderBy] = useState(defaultOrderBy);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selected, setSelected] = useState<string[]>([]);
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
@@ -252,6 +348,11 @@ export function useTable() {
     },
     [order, orderBy]
   );
+
+  const onResetSort = useCallback((id: string) => {
+    setOrderBy(id);
+    setOrder('asc');
+  }, []);
 
   const onSelectAllRows = useCallback((checked: boolean, newSelecteds: string[]) => {
     if (checked) {
@@ -288,17 +389,34 @@ export function useTable() {
     [onResetPage]
   );
 
-  return {
-    page,
-    order,
-    onSort,
-    orderBy,
-    selected,
-    rowsPerPage,
-    onSelectRow,
-    onResetPage,
-    onChangePage,
-    onSelectAllRows,
-    onChangeRowsPerPage,
-  };
+  return useMemo(
+    () => ({
+      page,
+      order,
+      onSort,
+      orderBy,
+      selected,
+      rowsPerPage,
+      onSelectRow,
+      onResetPage,
+      onResetSort,
+      onChangePage,
+      onSelectAllRows,
+      onChangeRowsPerPage,
+    }),
+    [
+      page,
+      order,
+      onSort,
+      orderBy,
+      selected,
+      rowsPerPage,
+      onSelectRow,
+      onResetPage,
+      onResetSort,
+      onChangePage,
+      onSelectAllRows,
+      onChangeRowsPerPage,
+    ]
+  );
 }

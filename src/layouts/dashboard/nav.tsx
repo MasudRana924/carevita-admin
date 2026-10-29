@@ -15,6 +15,7 @@ import { RouterLink } from 'src/routes/components';
 import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useUnreadSummary } from 'src/sections/admin/support-chat/use-unread-summary';
+import { usePendingReviewCount } from 'src/sections/admin/caregivers/use-pending-review-count';
 
 import type { NavGroup, NavItem } from '../nav-config-dashboard';
 
@@ -98,9 +99,11 @@ function NavContent({
 }: NavContentProps & { onItemClick?: () => void }) {
   const pathname = usePathname();
   const { data: unreadSummary } = useUnreadSummary();
+  const { count: pendingReviewCount } = usePendingReviewCount();
 
   const badges: Record<NonNullable<NavItem['badge']>, number> = {
     supportChatUnread: unreadSummary?.unread_conversations ?? 0,
+    caregiversPendingReview: pendingReviewCount,
   };
 
   return (

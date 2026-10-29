@@ -3,23 +3,28 @@ import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CircularProgress from '@mui/material/CircularProgress';
+import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
+import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
 import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import InputAdornment from '@mui/material/InputAdornment';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { DashboardContent } from 'src/layouts/dashboard';
+import { Iconify } from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { PageHeader } from 'src/components/page-header';
 import { DetailSkeleton, ErrorState } from 'src/components/page-states';
-import { InfoCard, InfoField, RecordFields } from 'src/components/record-fields';
+import { RecordFields } from 'src/components/record-fields';
+import { DetailRow, InfoTile, ProfileHero, SectionCard, StatTile } from 'src/components/detail-ui';
 import { StatusBadge } from 'src/components/status-badge';
 import { useSnackbar } from 'src/components/snackbar';
 import { bookingsApi, bkashApi } from 'src/lib/api';
@@ -167,187 +172,282 @@ export function BookingDetailView() {
 
   if (bookingQuery.isLoading) {
     return (
-      <DashboardContent maxWidth="xl">
+      <DashboardContent>
         <DetailSkeleton />
       </DashboardContent>
     );
   }
 
+  const bookingNumber = pickString(booking, ['booking_number', 'id'], 'Booking details');
+  const breadcrumbs = [
+    { title: 'Dashboard', href: '/dashboard' },
+    { title: 'Bookings', href: '/bookings' },
+    { title: bookingNumber },
+  ];
+
   if (bookingQuery.error) {
     return (
-      <DashboardContent maxWidth="xl">
-        <PageHeader title="Booking details" />
+      <DashboardContent>
+        <PageHeader title="Booking details" breadcrumbs={breadcrumbs} />
         <ErrorState message={getErrorMessage(bookingQuery.error)} onRetry={() => bookingQuery.refetch()} />
       </DashboardContent>
     );
   }
 
+  const customer = pickString(booking, ['customer_name', 'user_name', 'user_id']);
+  const caregiver = pickString(booking, ['caregiver_name', 'provider_name']);
+  const bookingDate = pickString(booking, ['booking_date', 'scheduled_at'], '');
+
   return (
-    <DashboardContent maxWidth="xl">
-      <PageHeader
-        title={pickString(booking, ['booking_number', 'id'], 'Booking details')}
-        action={
-          !cancelled ? (
-            <Button color="error" variant="contained" onClick={() => setCancelOpen(true)}>
-              Cancel booking
-            </Button>
-          ) : null
-        }
-      />
+    <DashboardContent>
+      <PageHeader title="Booking details" breadcrumbs={breadcrumbs} />
 
-      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mb: 3 }}>
-        <InfoCard title="Booking">
-          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-            <InfoField
-              label="Status"
-              value={
+      <Stack spacing={3}>
+        <ProfileHero
+          avatarIcon="solar:clipboard-list-bold-duotone"
+          name={bookingNumber}
+          subtitle={booking.created_at ? `Created ${fDateTime(String(booking.created_at))}` : undefined}
+          badges={
+            <>
+              <StatusBadge value={bookingStatus} label={isSearching ? 'Searching caregiver' : undefined} />
+              {booking.payout_frozen != null && (
                 <StatusBadge
-                  value={bookingStatus}
-                  label={isSearching ? 'Searching caregiver' : undefined}
+                  value={!booking.payout_frozen}
+                  label={booking.payout_frozen ? 'Payout frozen' : 'Payout OK'}
                 />
-              }
-            />
-            <InfoField label="Customer" value={pickString(booking, ['customer_name', 'user_name', 'user_id'])} />
-            <InfoField label="Caregiver" value={pickString(booking, ['caregiver_name', 'provider_name'])} />
-            <InfoField label="Created" value={booking.created_at ? fDateTime(String(booking.created_at)) : '—'} />
-            {isProviderAssigned && offerExpiresAt && offerExpiresAt !== '—' && (
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <InfoField
-                  label="Offer window"
-                  value={
-                    <OfferExpiryText
-                      expiresAt={offerExpiresAt}
-                      timeoutMinutes={acceptTimeoutMinutes}
-                    />
-                  }
-                />
-              </Box>
-            )}
-            {isSearching && (
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Typography variant="body2" color="info.main">
-                  Searching caregiver — waiting for assignment or reassignment after reject/timeout.
-                </Typography>
-              </Box>
-            )}
-            {acceptTimeoutMinutes != null && isProviderAssigned && (
-              <InfoField label="Accept timeout" value={`${acceptTimeoutMinutes} minutes`} />
-            )}
-            {booking.payout_frozen != null && (
-              <InfoField
-                label="Payout"
-                value={
-                  <StatusBadge
-                    value={Boolean(booking.payout_frozen)}
-                    label={booking.payout_frozen ? 'Frozen' : 'OK'}
-                  />
-                }
-              />
-            )}
-          </Box>
-        </InfoCard>
-
-        <InfoCard
-          title="Payment / refund"
-          action={
-            <Button size="small" variant="outlined" onClick={() => statusQuery.refetch()} disabled={statusQuery.isFetching}>
-              {statusQuery.isFetching ? 'Refreshing...' : 'Refund Status'}
-            </Button>
+              )}
+            </>
           }
-        >
-          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' } }}>
-            <InfoField label="Paid" value={money(originalAmount)} />
-            <InfoField label="Refunded" value={money(refundedAmount)} />
-            <InfoField label="Remaining" value={money(remaining)} />
-          </Box>
-          {timeoutHint && (
-            <Typography variant="body2" color="warning.main" sx={{ mt: 2 }}>
-              {timeoutHint}
-            </Typography>
-          )}
-        </InfoCard>
-      </Box>
+          actions={
+            !cancelled ? (
+              <Button
+                color="error"
+                variant="contained"
+                startIcon={<Iconify icon="solar:close-circle-bold" />}
+                onClick={() => setCancelOpen(true)}
+              >
+                Cancel booking
+              </Button>
+            ) : null
+          }
+          tiles={
+            <>
+              <InfoTile icon="solar:user-rounded-bold-duotone" label="Customer" value={customer} />
+              <InfoTile icon="solar:hand-heart-bold-duotone" label="Caregiver" value={caregiver} />
+              <InfoTile
+                icon="solar:calendar-bold-duotone"
+                label="Booking date"
+                value={bookingDate && bookingDate !== '—' ? fDateTime(bookingDate) : '—'}
+              />
+              <InfoTile icon="solar:hashtag-bold-duotone" label="Booking ID" value={bookingId} />
+            </>
+          }
+        />
 
-      <Card sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Refund
-        </Typography>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ md: 'center' }}>
-          <TextField
-            label="Amount"
-            placeholder="Leave empty to refund remaining"
-            value={refundAmount}
-            onChange={(event) => setRefundAmount(event.target.value)}
-            disabled={refundDisabled}
-            sx={{ minWidth: 220 }}
-          />
-          <TextField
-            label="Reason"
-            value={refundReason}
-            onChange={(event) => setRefundReason(event.target.value)}
-            disabled={refundDisabled}
-            sx={{ flexGrow: 1 }}
-          />
-          <Button
-            variant="contained"
-            color="error"
-            disabled={refundDisabled || refundMutation.isPending}
-            startIcon={refundMutation.isPending ? <CircularProgress size={16} /> : null}
-            onClick={() => refundMutation.mutate()}
-          >
-            Refund
-          </Button>
-        </Stack>
-        {refundDisabled && (
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
-            {remaining != null && remaining <= 0
-              ? 'Nothing left to refund.'
-              : 'Maximum of 10 refunds has been reached.'}
-          </Typography>
-        )}
-      </Card>
-
-      <Card sx={{ p: 3, mb: 3, border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Refund history
-        </Typography>
-        {history.length ? (
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Refund Trx</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Amount</TableCell>
-                <TableCell>Completed</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {history.map((row, index) => (
-                <TableRow key={pickString(row, ['refundTrxId', 'id'], String(index))}>
-                  <TableCell>{pickString(row, ['refundTrxId', 'id'])}</TableCell>
-                  <TableCell>
-                    <StatusBadge value={pickString(row, ['refundTransactionStatus', 'status'], '')} />
-                  </TableCell>
-                  <TableCell>{money(row.refundAmount ?? row.amount)}</TableCell>
-                  <TableCell>
-                    {row.completedTime ? fDateTime(String(row.completedTime)) : pickString(row, ['created_at', 'completed_at'])}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          <Typography color="text.secondary">No refund transactions yet.</Typography>
-        )}
-      </Card>
-
-      {Boolean(cancelResult.cancellation_policy || cancelResult.refund) && (
-        <Box sx={{ mb: 3 }}>
-          <RecordFields title="Last cancellation response" record={cancelResult} />
+        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
+          <StatTile icon="solar:wallet-money-bold-duotone" color="primary" label="Paid" value={money(originalAmount)} />
+          <StatTile icon="solar:undo-left-round-bold" color="warning" label="Refunded" value={money(refundedAmount)} />
+          <StatTile icon="solar:safe-square-bold-duotone" color="success" label="Remaining" value={money(remaining)} />
         </Box>
-      )}
 
-      <RecordFields title="Booking record" record={booking} />
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, lg: 8 }}>
+            <Stack spacing={3}>
+              <SectionCard
+                icon="solar:clipboard-text-bold-duotone"
+                color="primary"
+                title="Booking"
+                subtitle="Assignment and payout status"
+              >
+                <Stack spacing={1.75}>
+                  <DetailRow
+                    label="Status"
+                    value={<StatusBadge value={bookingStatus} label={isSearching ? 'Searching caregiver' : undefined} />}
+                  />
+                  <DetailRow label="Customer" value={customer} />
+                  <DetailRow label="Caregiver" value={caregiver} />
+                  <DetailRow label="Created" value={booking.created_at ? fDateTime(String(booking.created_at)) : '—'} />
+                  {acceptTimeoutMinutes != null && isProviderAssigned && (
+                    <DetailRow label="Accept timeout" value={`${acceptTimeoutMinutes} minutes`} />
+                  )}
+                  {booking.payout_frozen != null && (
+                    <DetailRow
+                      label="Payout"
+                      value={
+                        <StatusBadge
+                          value={Boolean(booking.payout_frozen)}
+                          label={booking.payout_frozen ? 'Frozen' : 'OK'}
+                        />
+                      }
+                    />
+                  )}
+                </Stack>
+                {isProviderAssigned && offerExpiresAt && offerExpiresAt !== '—' && (
+                  <Box sx={{ mt: 2, p: 1.5, borderRadius: 1.5, bgcolor: 'warning.lighter' }}>
+                    <Typography variant="caption" sx={{ color: 'warning.darker', fontWeight: 600 }}>
+                      Offer window
+                    </Typography>
+                    <OfferExpiryText expiresAt={offerExpiresAt} timeoutMinutes={acceptTimeoutMinutes} />
+                  </Box>
+                )}
+                {isSearching && (
+                  <Stack
+                    direction="row"
+                    spacing={1.5}
+                    alignItems="center"
+                    sx={{ mt: 2, p: 1.5, borderRadius: 1.5, bgcolor: 'info.lighter', color: 'info.darker' }}
+                  >
+                    <Iconify icon="solar:magnifer-linear" width={20} />
+                    <Typography variant="body2">
+                      Searching caregiver — waiting for assignment or reassignment after reject/timeout.
+                    </Typography>
+                  </Stack>
+                )}
+              </SectionCard>
+
+              <SectionCard
+                icon="solar:history-bold-duotone"
+                color="warning"
+                title="Refund history"
+                count={history.length}
+                noPadding
+              >
+                {history.length ? (
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Refund Trx</TableCell>
+                        <TableCell>Status</TableCell>
+                        <TableCell>Amount</TableCell>
+                        <TableCell>Completed</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {history.map((row, index) => (
+                        <TableRow key={pickString(row, ['refundTrxId', 'id'], String(index))} hover>
+                          <TableCell sx={{ fontFamily: 'monospace' }}>{pickString(row, ['refundTrxId', 'id'])}</TableCell>
+                          <TableCell>
+                            <StatusBadge value={pickString(row, ['refundTransactionStatus', 'status'], '')} />
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>{money(row.refundAmount ?? row.amount)}</TableCell>
+                          <TableCell>
+                            {row.completedTime
+                              ? fDateTime(String(row.completedTime))
+                              : pickString(row, ['created_at', 'completed_at'])}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <Stack alignItems="center" spacing={1} sx={{ py: 5, color: 'text.secondary' }}>
+                    <Iconify icon="solar:bill-list-bold-duotone" width={36} sx={{ opacity: 0.6 }} />
+                    <Typography variant="body2">No refund transactions yet.</Typography>
+                  </Stack>
+                )}
+              </SectionCard>
+
+              {Boolean(cancelResult.cancellation_policy || cancelResult.refund) && (
+                <RecordFields title="Last cancellation response" record={cancelResult} />
+              )}
+
+              <RecordFields title="Booking record" record={booking} />
+            </Stack>
+          </Grid>
+
+          <Grid size={{ xs: 12, lg: 4 }}>
+            <Stack spacing={3} sx={{ position: { lg: 'sticky' }, top: { lg: 88 } }}>
+              <SectionCard
+                icon="solar:hand-money-bold-duotone"
+                color="error"
+                title="Issue refund"
+                subtitle="bKash refund for this booking"
+                action={
+                  <Tooltip title="Refresh refund status">
+                    <span>
+                      <IconButton onClick={() => statusQuery.refetch()} disabled={statusQuery.isFetching}>
+                        {statusQuery.isFetching ? (
+                          <CircularProgress size={18} />
+                        ) : (
+                          <Iconify icon="solar:restart-bold" width={20} />
+                        )}
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                }
+              >
+                <Stack spacing={2}>
+                  <TextField
+                    fullWidth
+                    label="Amount"
+                    placeholder="Leave empty to refund remaining"
+                    value={refundAmount}
+                    onChange={(event) => setRefundAmount(event.target.value)}
+                    disabled={refundDisabled}
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Typography sx={{ color: 'text.disabled', fontWeight: 600 }}>৳</Typography>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  />
+                  <TextField
+                    fullWidth
+                    multiline
+                    minRows={2}
+                    label="Reason"
+                    value={refundReason}
+                    onChange={(event) => setRefundReason(event.target.value)}
+                    disabled={refundDisabled}
+                  />
+                  <Button
+                    fullWidth
+                    size="large"
+                    variant="contained"
+                    color="error"
+                    disabled={refundDisabled || refundMutation.isPending}
+                    startIcon={
+                      refundMutation.isPending ? (
+                        <CircularProgress size={16} color="inherit" />
+                      ) : (
+                        <Iconify icon="solar:undo-left-round-bold" />
+                      )
+                    }
+                    onClick={() => refundMutation.mutate()}
+                  >
+                    Refund
+                  </Button>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', textAlign: 'center' }}>
+                    {refundCount} of {MAX_REFUNDS} refunds used
+                  </Typography>
+                </Stack>
+
+                {refundDisabled && (
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: 2, p: 1.5, borderRadius: 1, bgcolor: 'background.neutral', color: 'text.secondary' }}
+                  >
+                    {remaining != null && remaining <= 0
+                      ? 'Nothing left to refund.'
+                      : 'Maximum of 10 refunds has been reached.'}
+                  </Typography>
+                )}
+                {timeoutHint && (
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: 2, p: 1.5, borderRadius: 1, bgcolor: 'warning.lighter', color: 'warning.darker' }}
+                  >
+                    {timeoutHint}
+                  </Typography>
+                )}
+              </SectionCard>
+            </Stack>
+          </Grid>
+        </Grid>
+      </Stack>
 
       <ConfirmDialog
         open={cancelOpen}

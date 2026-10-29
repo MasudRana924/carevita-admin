@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-
 import { useAuth } from 'src/contexts/AuthContext';
+
+import { PageLoader } from './page-loader';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, isAdmin } = useAuth();
@@ -18,11 +17,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, isLoading, navigate, location.pathname]);
 
   if (isLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <PageLoader variant="fullscreen" />;
   }
 
   if (!isAuthenticated || !isAdmin) {

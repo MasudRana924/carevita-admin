@@ -14,7 +14,7 @@ import { fDate } from 'src/utils/format-time';
 import { fShortenNumber } from 'src/utils/format-number';
 
 import { SvgColor } from 'src/components/svg-color';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -113,7 +113,7 @@ export function PostItem({
             }),
           }}
         >
-                            <LucideIcon width={16} icon={info.icon} sx={{ mr: 0.5 }} />
+                            <Iconify width={16} icon={info.icon} sx={{ mr: 0.5 }} />
           <Typography variant="caption">{fShortenNumber(info.number)}</Typography>
         </Box>
       ))}

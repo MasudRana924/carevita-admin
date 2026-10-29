@@ -21,7 +21,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { useSnackbar } from 'src/components/snackbar';
 import { Breadcrumb } from 'src/components/breadcrumb';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -158,7 +158,7 @@ export default function UserDetailPage() {
              <Box sx={{ display: 'flex', gap: 3, mb: 3 }}>
          <Button
            variant="outlined"
-           startIcon={<LucideIcon icon="eva:arrow-ios-back-fill" />}
+           startIcon={<Iconify icon="solar:alt-arrow-left-linear" />}
            onClick={() => router.back()}
            sx={{
              borderColor: 'grey.400',
@@ -196,7 +196,7 @@ export default function UserDetailPage() {
 
           <Button
             variant="outlined"
-            startIcon={<LucideIcon icon="eva:plus-fill" />}
+            startIcon={<Iconify icon="solar:add-circle-bold" />}
             onClick={handleImageClick}
           >
             Change Photo

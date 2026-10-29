@@ -12,7 +12,7 @@ import FormControl from '@mui/material/FormControl';
 
 import { useRouter } from 'src/routes/hooks';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -93,7 +93,7 @@ export function HospitalTableToolbar({
             placeholder="Search hospital..."
             startAdornment={
               <InputAdornment position="start">
-                <LucideIcon width={20} icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                <Iconify width={20} icon="solar:magnifer-linear" sx={{ color: 'text.disabled' }} />
               </InputAdornment>
             }
             sx={{ flex: 1, minWidth: 180, maxWidth: 320, ...CONTROL_SX }}
@@ -133,7 +133,7 @@ export function HospitalTableToolbar({
             <Button
               color="error"
               variant="outlined"
-              startIcon={<LucideIcon icon="eva:close-fill" />}
+              startIcon={<Iconify icon="solar:close-circle-bold" />}
               onClick={onClearFilters}
               sx={{
                 height: 56,
@@ -154,14 +154,14 @@ export function HospitalTableToolbar({
         {numSelected > 0 ? (
           <Tooltip title="Delete">
             <IconButton sx={{ color: 'error.main' }}>
-              <LucideIcon icon="solar:trash-bin-trash-bold" />
+              <Iconify icon="solar:trash-bin-trash-bold" />
             </IconButton>
           </Tooltip>
         ) : (
           <Button
             variant="contained"
             color="inherit"
-            startIcon={<LucideIcon icon="mingcute:add-line" />}
+            startIcon={<Iconify icon="solar:add-circle-bold" />}
             onClick={handleNewHospital}
             sx={{ height: 56, whiteSpace: 'nowrap' }}
           >

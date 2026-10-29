@@ -14,6 +14,9 @@ import type {
   CaregiverEkycDetail,
   CaregiverEkycActionPayload,
   CaregiverCredentialsPayload,
+  CaregiverVerificationDetail,
+  CaregiverApprovePayload,
+  CaregiverRejectPayload,
   Hospital,
   HospitalsQueryParams,
   HospitalCreateData,
@@ -171,6 +174,28 @@ export const adminCaregiversService = {
       payload
     );
     return unwrapData<Caregiver>(response.data);
+  },
+
+  getVerification: async (id: string): Promise<CaregiverVerificationDetail> => {
+    const response = await apiClient.get<AdminApiResponse<CaregiverVerificationDetail>>(
+      `${ADMIN_BASE}/caregivers/${id}/verification`
+    );
+    return unwrapData<CaregiverVerificationDetail>(response.data);
+  },
+
+  approve: async (id: string, body?: CaregiverApprovePayload): Promise<{ message?: string }> => {
+    const response = await apiClient.post<AdminApiResponse<unknown>>(
+      `${ADMIN_BASE}/caregivers/${id}/approve`,
+      body?.note ? { note: body.note } : {}
+    );
+    return { message: unwrapEnvelope(response.data).message };
+  },
+
+  reject: async (id: string, body: CaregiverRejectPayload): Promise<{ message?: string }> => {
+    const response = await apiClient.post<AdminApiResponse<unknown>>(`${ADMIN_BASE}/caregivers/${id}/reject`, {
+      reason: body.reason,
+    });
+    return { message: unwrapEnvelope(response.data).message };
   },
 };
 

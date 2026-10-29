@@ -118,6 +118,8 @@ export type CredentialStatus =
   | 'SUSPENDED'
   | 'REVERIFY_REQUIRED';
 
+export type CaregiverVerificationStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
+
 export interface Caregiver {
   id: string;
   user_id: string;
@@ -132,8 +134,10 @@ export interface Caregiver {
   gender: 'male' | 'female' | 'other';
   district: string;
   thana: string;
-  verification_status: 'PENDING' | 'APPROVED' | 'SUSPENDED';
+  verification_status: CaregiverVerificationStatus;
   verification_note: string | null;
+  documents_count?: number | null;
+  documents_submitted_at?: string | null;
   credential_status?: CredentialStatus | null;
   credential_note?: string | null;
   credential_expires_at?: string | null;
@@ -156,8 +160,10 @@ export interface Caregiver {
 }
 
 export interface CaregiversQueryParams {
-  verification_status?: 'PENDING' | 'APPROVED' | 'SUSPENDED';
+  verification_status?: CaregiverVerificationStatus;
   ekyc_session_status?: EkycSessionStatus;
+  /** PENDING + Didit approved: ready for manual admin review */
+  pending_review?: boolean;
   page?: number;
   limit?: number;
 }
@@ -204,6 +210,86 @@ export interface CaregiverEkycDetail {
 
 export interface CaregiverEkycActionPayload {
   comment?: string;
+}
+
+export type CaregiverOnboardingStep =
+  | 'DOCUMENTS'
+  | 'PROFILE'
+  | 'EKYC'
+  | 'PENDING_ADMIN_APPROVAL'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'SUSPENDED';
+
+export type CaregiverDocumentType =
+  | 'family_nid_front'
+  | 'family_nid_back'
+  | 'academic_certificate'
+  | 'professional_certificate'
+  | string;
+
+export interface CaregiverDocument {
+  id: string;
+  document_type: CaregiverDocumentType;
+  file_url: string;
+  /** `raw` = PDF */
+  resource_type: 'image' | 'raw';
+  original_name: string | null;
+  mime_type: string | null;
+  size_bytes: number | null;
+  title: string | null;
+  family_member_name: string | null;
+  family_member_relation: string | null;
+  created_at: string;
+}
+
+export interface CaregiverVerificationDocuments {
+  family_nid_front: CaregiverDocument | null;
+  family_nid_back: CaregiverDocument | null;
+  academic_certificates: CaregiverDocument[];
+  professional_certificates: CaregiverDocument[];
+}
+
+export interface CaregiverDocumentsSummary {
+  family_nid_front: boolean;
+  family_nid_back: boolean;
+  academic_certificates: number;
+  professional_certificates: number;
+  complete: boolean;
+  missing: string[];
+}
+
+export interface CaregiverVerificationDetail {
+  caregiver_id: string;
+  user_id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  profile_photo: string | null;
+  provider_type: string | null;
+  district: string | null;
+  thana: string | null;
+  verification_status: CaregiverVerificationStatus;
+  verification_note: string | null;
+  approved_at: string | null;
+  approved_by: string | { id?: string; name?: string; email?: string } | null;
+  rejected_at: string | null;
+  ekyc_status: boolean;
+  ekyc_session_status: EkycSessionStatus | null;
+  ekyc_verified_at: string | null;
+  onboarding_step: CaregiverOnboardingStep;
+  can_approve: boolean;
+  can_reject: boolean;
+  documents: CaregiverVerificationDocuments;
+  documents_summary: CaregiverDocumentsSummary;
+}
+
+export interface CaregiverApprovePayload {
+  note?: string;
+}
+
+export interface CaregiverRejectPayload {
+  reason: string;
 }
 
 export interface CaregiverCredentialsPayload {

@@ -2,15 +2,13 @@ import type { RouteObject } from 'react-router';
 
 import { lazy, Suspense } from 'react';
 import { Navigate, Outlet, useParams } from 'react-router-dom';
-import { varAlpha } from 'minimal-shared/utils';
-
-import Box from '@mui/material/Box';
-import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
 
 import { AuthLayout } from 'src/layouts/auth';
 import { DashboardLayout } from 'src/layouts/dashboard';
+import { PageLoader } from 'src/components/page-loader';
 import { AuthRedirect } from 'src/components/auth-redirect';
 import { ProtectedRoute } from 'src/components/protected-route';
+import { RouteTransitionLoader } from 'src/components/route-transition-loader';
 
 const LoginPage = lazy(() => import('src/pages/login'));
 const DashboardView = lazy(() => import('src/sections/admin/dashboard-view'));
@@ -41,32 +39,31 @@ const SettingsView = lazy(() => import('src/sections/admin/settings').then((m) =
 const SupportChatView = lazy(() =>
   import('src/sections/admin/support-chat').then((m) => ({ default: m.SupportChatView }))
 );
+const CaregiverVerificationView = lazy(() =>
+  import('src/sections/admin/caregivers').then((m) => ({ default: m.CaregiverVerificationView }))
+);
 
 function LegacyConversationRedirect() {
   const { id } = useParams();
   return <Navigate to={id ? `/support-chat/${id}` : '/support-chat'} replace />;
 }
 
-const renderFallback = () => (
-  <Box sx={{ display: 'flex', flex: '1 1 auto', alignItems: 'center', justifyContent: 'center' }}>
-    <LinearProgress
-      sx={{
-        width: 1,
-        maxWidth: 320,
-        bgcolor: (theme) => varAlpha(theme.vars.palette.text.primaryChannel, 0.16),
-        [`& .${linearProgressClasses.bar}`]: { bgcolor: 'text.primary' },
-      }}
-    />
-  </Box>
-);
+function LegacyVerificationRedirect() {
+  const { id } = useParams();
+  return <Navigate to={id ? `/caregivers/${id}/verification` : '/caregivers?tab=pending'} replace />;
+}
+
+const renderFallback = () => <PageLoader />;
 
 function AdminShell() {
   return (
     <ProtectedRoute>
       <DashboardLayout>
-        <Suspense fallback={renderFallback()}>
-          <Outlet />
-        </Suspense>
+        <RouteTransitionLoader>
+          <Suspense fallback={renderFallback()}>
+            <Outlet />
+          </Suspense>
+        </RouteTransitionLoader>
       </DashboardLayout>
     </ProtectedRoute>
   );
@@ -105,6 +102,9 @@ export const routesSection: RouteObject[] = [
       { path: 'users/:id', element: <UserDetailView /> },
       { path: 'caregivers', element: <CaregiversView /> },
       { path: 'caregivers/:id/ekyc', element: <CaregiverEkycDetailView /> },
+      { path: 'caregivers/:id/verification', element: <CaregiverVerificationView /> },
+      { path: 'pending-verifications', element: <LegacyVerificationRedirect /> },
+      { path: 'pending-verifications/:id/review', element: <LegacyVerificationRedirect /> },
       { path: 'hospitals', element: <HospitalsView /> },
       { path: 'hospitals/new', element: <NewHospitalView /> },
       { path: 'hospitals/:id', element: <HospitalEditView /> },

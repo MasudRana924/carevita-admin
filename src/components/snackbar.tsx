@@ -4,7 +4,7 @@ import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 import IconButton from '@mui/material/IconButton';
 
-import { LucideIcon } from './lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ export function SnackbarProvider({ children }: { children: React.ReactNode }) {
       case 'error':
         return 'solar:close-circle-bold';
       case 'warning':
-        return 'solar:warning-bold';
+        return 'solar:danger-triangle-bold';
       case 'info':
         return 'solar:info-circle-bold';
       default:
@@ -88,10 +88,10 @@ export function SnackbarProvider({ children }: { children: React.ReactNode }) {
               size="small"
               onClick={handleClose}
             >
-              <LucideIcon icon="solar:close-bold" />
+              <Iconify icon="solar:close-bold" />
             </IconButton>
           }
-          icon={<LucideIcon icon={getIcon(type)} />}
+          icon={<Iconify icon={getIcon(type)} />}
         >
           {message}
         </Alert>

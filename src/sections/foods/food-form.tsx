@@ -17,7 +17,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 
 import { DashboardContent } from 'src/layouts/dashboard';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 import { foodFormValidationSchema, type FoodFormData } from './validation-schema';
 
@@ -247,7 +247,7 @@ export function FoodForm({
                       },
                     }}
                   >
-                    <LucideIcon icon="eva:edit-fill" sx={{ fontSize: 16 }} />
+                    <Iconify icon="solar:pen-bold" sx={{ fontSize: 16 }} />
                   </Button>
                   <Button
                     size="small"
@@ -267,7 +267,7 @@ export function FoodForm({
                       },
                     }}
                   >
-                    <LucideIcon icon="eva:trash-2-fill" sx={{ fontSize: 16 }} />
+                    <Iconify icon="solar:trash-bin-trash-bold" sx={{ fontSize: 16 }} />
                   </Button>
                 </Box>
               </>
@@ -285,7 +285,7 @@ export function FoodForm({
                     color: 'white',
                   }}
                 >
-                  <LucideIcon icon="eva:camera-fill" sx={{ fontSize: 32 }} />
+                  <Iconify icon="solar:camera-bold" sx={{ fontSize: 32 }} />
                 </Box>
                 <Typography variant="body1" color="text.secondary">
                   Click to upload food image
@@ -406,7 +406,7 @@ export function FoodForm({
             size="large"
             onClick={handleSubmit}
             disabled={isLoading}
-            startIcon={<LucideIcon icon="eva:checkmark-circle-2-fill" />}
+            startIcon={<Iconify icon="solar:check-circle-bold" />}
             sx={{
               px: 4,
               py: 1.5,

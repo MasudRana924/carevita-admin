@@ -22,7 +22,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Label } from 'src/components/label';
 import { Breadcrumb } from 'src/components/breadcrumb';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ export default function OrderDetailPage() {
       <Box sx={{ mb: 3 }}>
         <Button
           variant="outlined"
-          startIcon={<LucideIcon icon="eva:arrow-back-fill" />}
+          startIcon={<Iconify icon="solar:arrow-left-linear" />}
           onClick={handleBack}
           sx={{
             border: '1px solid',

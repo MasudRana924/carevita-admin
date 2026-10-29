@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
@@ -13,7 +12,8 @@ import { useRouter } from 'src/routes/hooks';
 import { useAuth } from 'src/contexts/AuthContext';
 
 import { ErrorAlert } from 'src/components/error-alert';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
+import { iconFieldSlotProps } from 'src/components/detail-ui';
 
 export function SignInView() {
   const router = useRouter();
@@ -79,7 +79,7 @@ export function SignInView() {
           justifyContent: 'center',
           alignItems: 'center',
           padding: 4,
-          // backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
         }}
       >
         <Box sx={{ width: '100%', maxWidth: 450 }}>
@@ -107,7 +107,10 @@ export function SignInView() {
               required
               autoComplete="username"
               sx={{ mb: 3 }}
-              slotProps={{ inputLabel: { shrink: true } }}
+              slotProps={{
+                inputLabel: { shrink: true },
+                ...iconFieldSlotProps('solar:letter-bold-duotone'),
+              }}
             />
 
             <TextField
@@ -122,6 +125,11 @@ export function SignInView() {
               slotProps={{
                 inputLabel: { shrink: true },
                 input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Iconify icon="solar:lock-password-bold-duotone" width={20} sx={{ color: 'text.disabled' }} />
+                    </InputAdornment>
+                  ),
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -129,7 +137,7 @@ export function SignInView() {
                         onClick={() => setShowPassword((prev) => !prev)}
                         edge="end"
                       >
-                        <LucideIcon icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                        <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -145,7 +153,6 @@ export function SignInView() {
               color="inherit"
               variant="contained"
               disabled={isLoading}
-              startIcon={isLoading ? <CircularProgress size={20} /> : null}
               sx={{
                 py: 1.5,
                 fontSize: '1rem',

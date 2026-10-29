@@ -15,41 +15,15 @@ import { fDateTime } from 'src/utils/format-time';
 
 import { Label } from 'src/components/label';
 import { StatusBadge } from 'src/components/status-badge';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
+
+import type { Caregiver } from 'src/api/admin-types';
+
+import { fDateTimeOrDash, getDiditSessionStatus } from './verification-utils';
 
 // ----------------------------------------------------------------------
 
-export type CaregiverTableRowProps = {
-  id: string;
-  user_id: string;
-  name: string;
-  email: string;
-  phone: string;
-  bio: string;
-  experience_years: number;
-  service_areas: string[];
-  hourly_rate: string;
-  education: string;
-  blood_group: string;
-  gender: 'male' | 'female' | 'other';
-  district: string;
-  thana: string;
-  verification_status: 'PENDING' | 'APPROVED' | 'SUSPENDED';
-  verification_note: string | null;
-  rating: string;
-  completed_bookings: number;
-  is_available: boolean;
-  ekyc_status: boolean;
-  ekyc_session_status?: string | null;
-  ekyc_verified_at?: string | null;
-  ekyc_reference_id?: string | null;
-  user_ekyc_status?: boolean;
-  user_ekyc_session_status?: string | null;
-  user_ekyc_verified_at?: string | null;
-  user_ekyc_reference_id?: string | null;
-  profile_photo: string | null;
-  created_at: string;
-};
+export type CaregiverTableRowProps = Caregiver;
 
 type CaregiverTableRowComponentProps = {
   row: CaregiverTableRowProps;
@@ -58,10 +32,6 @@ type CaregiverTableRowComponentProps = {
   onBlockCaregiver: (id: string) => void;
   onUnblockCaregiver: (id: string) => void;
 };
-
-function getEkycSessionStatus(row: CaregiverTableRowProps) {
-  return row.user_ekyc_session_status || row.ekyc_session_status || '';
-}
 
 export function CaregiverTableRow({
   row,
@@ -72,8 +42,9 @@ export function CaregiverTableRow({
 }: CaregiverTableRowComponentProps) {
   const navigate = useNavigate();
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
-  const ekycSessionStatus = getEkycSessionStatus(row);
+  const ekycSessionStatus = getDiditSessionStatus(row);
   const needsReview = ekycSessionStatus === 'In Review';
+  const verificationPath = `/caregivers/${row.id}/verification`;
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
     setOpenPopover(event.currentTarget);
@@ -93,6 +64,11 @@ export function CaregiverTableRow({
     onUnblockCaregiver(row.id);
   }, [row.id, handleClosePopover, onUnblockCaregiver]);
 
+  const handleReviewVerification = useCallback(() => {
+    handleClosePopover();
+    navigate(verificationPath);
+  }, [handleClosePopover, navigate, verificationPath]);
+
   const handleReviewEkyc = useCallback(() => {
     handleClosePopover();
     navigate(`/caregivers/${row.id}/ekyc`);
@@ -110,10 +86,10 @@ export function CaregiverTableRow({
         tabIndex={-1}
         role="checkbox"
         selected={selected}
-        onDoubleClick={() => navigate(`/caregivers/${row.id}/ekyc`)}
+        onClick={() => navigate(verificationPath)}
         sx={{ cursor: 'pointer' }}
       >
-        <TableCell padding="checkbox">
+        <TableCell padding="checkbox" onClick={(event) => event.stopPropagation()}>
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
         </TableCell>
 
@@ -164,20 +140,21 @@ export function CaregiverTableRow({
         </TableCell>
 
         <TableCell>
-          <Label
-            variant="soft"
-            color={
-              (row.verification_status === 'APPROVED' && 'success') ||
-              (row.verification_status === 'PENDING' && 'warning') ||
-              'error'
-            }
-          >
-            {row.verification_status}
-          </Label>
+          <StatusBadge value={row.verification_status} />
         </TableCell>
 
         <TableCell>
-          <StatusBadge value={ekycSessionStatus || (row.user_ekyc_status || row.ekyc_status ? 'Approved' : '—')} />
+          <StatusBadge value={ekycSessionStatus} />
+        </TableCell>
+
+        <TableCell>
+          <Typography variant="body2">{row.documents_count ?? 0}</Typography>
+        </TableCell>
+
+        <TableCell>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            {fDateTimeOrDash(row.documents_submitted_at)}
+          </Typography>
         </TableCell>
 
         <TableCell>
@@ -200,9 +177,9 @@ export function CaregiverTableRow({
           </Typography>
         </TableCell>
 
-        <TableCell align="right">
+        <TableCell align="right" onClick={(event) => event.stopPropagation()}>
           <IconButton onClick={handleOpenPopover}>
-            <LucideIcon icon="eva:more-vertical-fill" />
+            <Iconify icon="solar:menu-dots-vertical-bold" />
           </IconButton>
         </TableCell>
       </TableRow>
@@ -230,24 +207,29 @@ export function CaregiverTableRow({
             },
           }}
         >
+          <MenuItem onClick={handleReviewVerification}>
+            <Iconify icon="solar:check-circle-bold" />
+            Review verification
+          </MenuItem>
+
           <MenuItem onClick={handleReviewEkyc} sx={{ color: needsReview ? 'warning.main' : 'inherit' }}>
-            <LucideIcon icon="solar:shield-check-bold" />
+            <Iconify icon="solar:shield-check-bold" />
             {needsReview ? 'Review eKYC' : 'View eKYC'}
           </MenuItem>
 
           <MenuItem onClick={handleReviewCredentials}>
-            <LucideIcon icon="eva:file-text-outline" />
+            <Iconify icon="solar:document-text-bold" />
             Credentials
           </MenuItem>
 
           {row.verification_status === 'SUSPENDED' ? (
             <MenuItem onClick={handleUnblockCaregiver} sx={{ color: 'success.main' }}>
-              <LucideIcon icon="solar:shield-check-bold" />
+              <Iconify icon="solar:shield-check-bold" />
               Unblock Caregiver
             </MenuItem>
           ) : (
             <MenuItem onClick={handleBlockCaregiver} sx={{ color: 'error.main' }}>
-              <LucideIcon icon="solar:shield-cross-bold" />
+              <Iconify icon="solar:shield-cross-bold" />
               Block Caregiver
             </MenuItem>
           )}

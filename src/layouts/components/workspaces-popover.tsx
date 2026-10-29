@@ -10,7 +10,7 @@ import ButtonBase from '@mui/material/ButtonBase';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { Label } from 'src/components/label';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -87,7 +87,7 @@ export function WorkspacesPopover({ data = [], sx, ...other }: WorkspacesPopover
           {renderLabel(workspace?.plan)}
         </Box>
 
-        <LucideIcon width={16} icon="carbon:chevron-sort" sx={{ color: 'text.disabled' }} />
+        <Iconify width={16} icon="solar:sort-vertical-linear" sx={{ color: 'text.disabled' }} />
       </ButtonBase>
 
       <Popover open={!!openPopover} anchorEl={openPopover} onClose={handleClosePopover}>

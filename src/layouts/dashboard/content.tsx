@@ -19,7 +19,7 @@ export function DashboardContent({
   children,
   className,
   disablePadding,
-  maxWidth = 'lg',
+  maxWidth = false,
   layoutQuery = 'lg',
   ...other
 }: DashboardContentProps) {

@@ -6,7 +6,7 @@ import { varAlpha, mergeClasses } from 'minimal-shared/utils';
 import ButtonBase from '@mui/material/ButtonBase';
 import { styled, alpha as hexAlpha } from '@mui/material/styles';
 
-import { LucideIcon } from '../lucide-icons';
+import { Iconify } from 'src/components/iconify';
 import { colorPickerClasses } from './classes';
 
 // ----------------------------------------------------------------------
@@ -97,7 +97,7 @@ export function ColorPicker({
                 <ItemIcon
                   color={color}
                   hasSelected={hasSelected}
-                  icon="eva:checkmark-fill"
+                  icon="solar:check-read-linear"
                   className={colorPickerClasses.item.icon}
                   {...slotProps?.icon}
                 />
@@ -158,7 +158,7 @@ const ItemContainer = styled('span', {
   ],
 }));
 
-const ItemIcon = styled(LucideIcon, {
+const ItemIcon = styled(Iconify, {
   shouldForwardProp: (prop: string) => !['color', 'hasSelected', 'sx'].includes(prop),
 })<{ color: string; hasSelected: boolean }>(({ color, theme }) => ({
   width: 0,

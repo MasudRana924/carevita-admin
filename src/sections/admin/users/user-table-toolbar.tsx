@@ -10,7 +10,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -86,7 +86,7 @@ export function UserTableToolbar({
             placeholder="Search user..."
             startAdornment={
               <InputAdornment position="start">
-                <LucideIcon width={20} icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                <Iconify width={20} icon="solar:magnifer-linear" sx={{ color: 'text.disabled' }} />
               </InputAdornment>
             }
             sx={{ flex: 1, minWidth: 180, maxWidth: 320, ...CONTROL_SX }}
@@ -123,7 +123,7 @@ export function UserTableToolbar({
             <Button
               color="error"
               variant="outlined"
-              startIcon={<LucideIcon icon="eva:close-fill" />}
+              startIcon={<Iconify icon="solar:close-circle-bold" />}
               onClick={onClearFilters}
               sx={{
                 height: 56,
@@ -143,7 +143,7 @@ export function UserTableToolbar({
       {numSelected > 0 && (
         <Tooltip title="Delete">
           <IconButton sx={{ color: 'error.main' }}>
-            <LucideIcon icon="solar:trash-bin-trash-bold" />
+            <Iconify icon="solar:trash-bin-trash-bold" />
           </IconButton>
         </Tooltip>
       )}

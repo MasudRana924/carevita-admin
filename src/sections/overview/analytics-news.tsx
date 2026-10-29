@@ -12,7 +12,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { fToNow } from 'src/utils/format-time';
 
 import { Scrollbar } from 'src/components/scrollbar';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -45,7 +45,7 @@ export function AnalyticsNews({ title, subheader, list, sx, ...other }: Props) {
         <Button
           size="small"
           color="inherit"
-          endIcon={<LucideIcon icon="eva:arrow-ios-forward-fill" width={18} sx={{ ml: -0.5 }} />}
+          endIcon={<Iconify icon="solar:alt-arrow-right-linear" width={18} sx={{ ml: -0.5 }} />}
         >
           View all
         </Button>

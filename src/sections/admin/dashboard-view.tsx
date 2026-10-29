@@ -1,12 +1,21 @@
+import type { ReactNode } from 'react';
+
+import { keyframes } from '@emotion/react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 
 import { DashboardContent } from 'src/layouts/dashboard';
+
+import { fDate } from 'src/utils/format-time';
+import { Iconify } from 'src/components/iconify';
 import { adminDashboardService } from 'src/api/admin-services';
 import { getErrorMessage } from 'src/lib/utils';
 import { EmptyState, ErrorState } from 'src/components/page-states';
@@ -28,18 +37,18 @@ const KPI_LABELS: Record<string, string> = {
 
 const MONEY_KEYS = ['platform_wallet_balance', 'total_paid_revenue'];
 
-const CARD_GRADIENTS = [
-  'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-  'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-  'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-  'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-  'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-  'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
-  'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-  'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
-  'linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)',
-];
+const KPI_ICONS: Record<string, { icon: string; color: string }> = {
+  total_bookings: { icon: 'solar:calendar-bold-duotone', color: '#2563EB' },
+  pending_payment: { icon: 'solar:hourglass-line-bold-duotone', color: '#F59E0B' },
+  paid: { icon: 'solar:verified-check-bold-duotone', color: '#16A34A' },
+  today_bookings: { icon: 'solar:calendar-mark-bold-duotone', color: '#0891B2' },
+  weekly_bookings: { icon: 'solar:calendar-date-bold-duotone', color: '#7C3AED' },
+  total_users: { icon: 'solar:users-group-rounded-bold-duotone', color: '#DB2777' },
+  total_caregivers: { icon: 'solar:hand-heart-bold-duotone', color: '#E11D48' },
+  caregiver_payment_done: { icon: 'solar:hand-money-bold-duotone', color: '#059669' },
+  platform_wallet_balance: { icon: 'solar:wallet-money-bold-duotone', color: '#4F46E5' },
+  total_paid_revenue: { icon: 'solar:graph-up-bold-duotone', color: '#0D9488' },
+};
 
 const KPI_GRID_SX = {
   display: 'grid',
@@ -50,37 +59,100 @@ const KPI_GRID_SX = {
 
 const KPI_SKELETON_COUNT = 9;
 
-function getKpiCardSx(index: number) {
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+`;
+
+function enterSx(index: number) {
   return {
-    p: 2.5,
-    borderRadius: 2,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-    background: CARD_GRADIENTS[index % CARD_GRADIENTS.length],
-    color: 'white',
+    animation: `${fadeUp} 640ms cubic-bezier(0.22, 1, 0.36, 1) both`,
+    animationDelay: `${index * 60}ms`,
+    '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
   };
 }
 
+const CARD_SX = {
+  borderRadius: 2,
+  bgcolor: 'common.white',
+  border: 1,
+  borderColor: 'divider',
+  boxShadow: 'none',
+} as const;
+
+const KPI_CARD_SX = {
+  ...CARD_SX,
+  p: 2.5,
+  gap: 2,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  transition: 'transform 200ms ease, box-shadow 200ms ease',
+  '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 12px 24px -12px rgba(15, 23, 42, 0.18)' },
+} as const;
+
+const CHART_ANIMATION = {
+  enabled: true,
+  speed: 1000,
+  animateGradually: { enabled: true, delay: 120 },
+  dynamicAnimation: { enabled: true, speed: 450 },
+};
+
+type BookingsRow = { date: string; count: number };
+type PaymentsRow = { date: string; paid: number; pending: number };
+
 function isNumeric(value: unknown) {
   return typeof value === 'number' || (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value)));
+}
+
+function dayLabel(value: string) {
+  const formatted = fDate(value, 'DD MMM');
+  return formatted === 'Invalid date' ? value : formatted;
+}
+
+function formatMoney(value: number) {
+  return `৳${value.toLocaleString()}`;
+}
+
+function useCountUp(target: number, duration = 1000) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setValue(target);
+      return undefined;
+    }
+
+    let frame = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      setValue(progress === 1 ? target : target * (1 - (1 - progress) ** 3));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [target, duration]);
+
+  return value;
+}
+
+function AnimatedNumber({ value, format }: { value: number; format?: (value: number) => string }) {
+  const current = useCountUp(value);
+  const display = current === value ? value : Math.round(current);
+  return <>{format ? format(display) : display.toLocaleString()}</>;
 }
 
 function DashboardKpiSkeleton() {
   return (
     <Box sx={KPI_GRID_SX}>
       {Array.from({ length: KPI_SKELETON_COUNT }).map((_, index) => (
-        <Card key={index} sx={getKpiCardSx(index)}>
-          <Skeleton
-            variant="text"
-            width="62%"
-            height={20}
-            sx={{ bgcolor: 'rgba(255,255,255,0.38)' }}
-          />
-          <Skeleton
-            variant="rounded"
-            width="48%"
-            height={36}
-            sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.5)' }}
-          />
+        <Card key={index} sx={KPI_CARD_SX}>
+          <Box sx={{ flex: 1 }}>
+            <Skeleton variant="text" width="62%" height={20} />
+            <Skeleton variant="rounded" width="48%" height={36} sx={{ mt: 1 }} />
+          </Box>
+          <Skeleton variant="rounded" width={48} height={48} sx={{ borderRadius: 1.5 }} />
         </Card>
       ))}
     </Box>
@@ -88,9 +160,9 @@ function DashboardKpiSkeleton() {
 }
 
 export default function DashboardView() {
-  const dashboardQuery = useQuery({ 
-    queryKey: ['admin-dashboard'], 
-    queryFn: () => adminDashboardService.getDashboard() 
+  const dashboardQuery = useQuery({
+    queryKey: ['admin-dashboard'],
+    queryFn: () => adminDashboardService.getDashboard(),
   });
 
   const stats = dashboardQuery.data || ({} as Record<string, unknown>);
@@ -108,10 +180,10 @@ export default function DashboardView() {
     .filter(([key]) => isNumeric(normalizedStats[key]))
     .map(([key, label]) => ({ key, label, value: Number(normalizedStats[key]) }));
 
-  const allKpis = kpis;
-  
-  const bookingsLast7Days = (charts as any).bookings_last_7_days || [] as Array<{ date: string; count: number }>;
-  const paymentsLast7Days = (charts as any).payments_last_7_days || [] as Array<{ date: string; paid: number; pending: number }>;
+  const bookingsLast7Days: BookingsRow[] = (charts as any).bookings_last_7_days || [];
+  const paymentsLast7Days: PaymentsRow[] = (charts as any).payments_last_7_days || [];
+  const hasBookings = bookingsLast7Days.length > 0;
+  const hasPayments = paymentsLast7Days.length > 0;
 
   const isDashboardLoading =
     dashboardQuery.isLoading || (dashboardQuery.isFetching && !dashboardQuery.data);
@@ -124,67 +196,218 @@ export default function DashboardView() {
         <DashboardKpiSkeleton />
       ) : dashboardQuery.error ? (
         <ErrorState message={getErrorMessage(dashboardQuery.error)} onRetry={() => dashboardQuery.refetch()} />
-      ) : !allKpis.length ? (
+      ) : !kpis.length ? (
         <EmptyState title="No dashboard statistics available" />
       ) : (
         <Box sx={KPI_GRID_SX}>
-          {allKpis.map((item, index) => (
-            <Card
-              key={item.key}
-              sx={getKpiCardSx(index)}
-            >
-              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
-                {item.label}
-              </Typography>
-              <Typography variant="h4" sx={{ mt: 1, color: 'white' }}>
-                {MONEY_KEYS.includes(item.key) ? `৳${item.value.toLocaleString()}` : item.value.toLocaleString()}
-              </Typography>
-            </Card>
-          ))}
+          {kpis.map((item, index) => {
+            const { icon, color } = KPI_ICONS[item.key];
+            return (
+              <Card key={item.key} sx={[KPI_CARD_SX, enterSx(index)]}>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                    {item.label}
+                  </Typography>
+                  <Typography variant="h4" sx={{ mt: 1, color: 'text.primary' }}>
+                    <AnimatedNumber value={item.value} format={MONEY_KEYS.includes(item.key) ? formatMoney : undefined} />
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 1.5,
+                    color,
+                    bgcolor: `${color}1A`,
+                  }}
+                >
+                  <Iconify icon={icon} width={26} />
+                </Box>
+              </Card>
+            );
+          })}
         </Box>
       )}
 
-      {!isDashboardLoading && bookingsLast7Days.length > 0 && (
-        <BookingsLineCard rows={bookingsLast7Days} />
-      )}
-
-      {!isDashboardLoading && paymentsLast7Days.length > 0 && (
-        <PaymentsBarCard rows={paymentsLast7Days} />
+      {!isDashboardLoading && (hasBookings || hasPayments) && (
+        <Grid container spacing={3}>
+          {hasBookings && (
+            <Grid size={{ xs: 12, md: hasPayments ? 6 : 12 }}>
+              <BookingsChartCard rows={bookingsLast7Days} enterIndex={kpis.length} />
+            </Grid>
+          )}
+          {hasPayments && (
+            <Grid size={{ xs: 12, md: hasBookings ? 6 : 12 }}>
+              <PaymentsChartCard rows={paymentsLast7Days} enterIndex={kpis.length + 1} />
+            </Grid>
+          )}
+        </Grid>
       )}
     </DashboardContent>
   );
 }
 
-function BookingsLineCard({ rows }: { rows: Array<{ date: string; count: number }> }) {
-  const categories = rows.map((row) => row.date);
-  const data = rows.map((row) => row.count);
-  const options = useChart({
-    xaxis: { categories },
-    tooltip: { y: { formatter: (value: number) => `${value} bookings` } },
-  });
+// ----------------------------------------------------------------------
 
+function ChartCard({
+  icon,
+  color,
+  title,
+  subtitle,
+  summary,
+  enterIndex,
+  children,
+}: {
+  icon: string;
+  color: string;
+  title: string;
+  subtitle: string;
+  summary: ReactNode;
+  enterIndex: number;
+  children: ReactNode;
+}) {
   return (
-    <Card sx={{ p: 2.5, mb: 3 }}>
-      <CardHeader title="Bookings (Last 7 Days)" sx={{ px: 0, pt: 0 }} />
-      <Chart type="line" series={[{ name: 'Bookings', data }]} options={options} sx={{ height: 320 }} />
+    <Card sx={[CARD_SX, { p: 3, height: 1, display: 'flex', flexDirection: 'column' }, enterSx(enterIndex)]}>
+      <Stack direction="row" alignItems="flex-start" spacing={1.5} sx={{ mb: 2.5 }}>
+        <Box
+          sx={{
+            width: 44,
+            height: 44,
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 1.5,
+            color,
+            bgcolor: `${color}1A`,
+          }}
+        >
+          <Iconify icon={icon} width={24} />
+        </Box>
+        <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+          <Typography variant="subtitle1">{title}</Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            {subtitle}
+          </Typography>
+        </Box>
+        {summary}
+      </Stack>
+      <Box sx={{ flexGrow: 1 }}>{children}</Box>
     </Card>
   );
 }
 
-function PaymentsBarCard({ rows }: { rows: Array<{ date: string; paid: number; pending: number }> }) {
-  const categories = rows.map((row) => row.date);
-  const paidData = rows.map((row) => row.paid);
-  const pendingData = rows.map((row) => row.pending);
+function LegendStat({ color, label, value }: { color: string; label: string; value: ReactNode }) {
+  return (
+    <Box sx={{ textAlign: 'right' }}>
+      <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.75}>
+        <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: color }} />
+        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          {label}
+        </Typography>
+      </Stack>
+      <Typography variant="subtitle1">{value}</Typography>
+    </Box>
+  );
+}
+
+function BookingsChartCard({ rows, enterIndex }: { rows: BookingsRow[]; enterIndex: number }) {
+  const theme = useTheme();
+  const color = theme.palette.primary.main;
+
+  const data = rows.map((row) => Number(row.count) || 0);
+  const total = data.reduce((sum, value) => sum + value, 0);
+  const average = rows.length ? total / rows.length : 0;
+
   const options = useChart({
-    xaxis: { categories },
-    tooltip: { y: { formatter: (value: number) => `৳${value}` } },
-    plotOptions: { bar: { columnWidth: '40%' } },
+    chart: { animations: CHART_ANIMATION },
+    colors: [color],
+    stroke: { width: 3 },
+    fill: {
+      type: 'gradient',
+      gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.02, stops: [0, 95, 100] },
+    },
+    markers: { size: 0, hover: { size: 6 } },
+    xaxis: { categories: rows.map((row) => dayLabel(row.date)) },
+    yaxis: { tickAmount: 4, labels: { formatter: (value: number) => `${Math.round(value)}` } },
+    tooltip: { y: { formatter: (value: number) => `${value} bookings` } },
   });
 
   return (
-    <Card sx={{ p: 2.5, mb: 3 }}>
-      <CardHeader title="Payments (Last 7 Days)" sx={{ px: 0, pt: 0 }} />
-      <Chart type="bar" series={[{ name: 'Paid', data: paidData }, { name: 'Pending', data: pendingData }]} options={options} sx={{ height: 280 }} />
-    </Card>
+    <ChartCard
+      icon="solar:chart-2-bold-duotone"
+      color={color}
+      title="Bookings"
+      subtitle="Last 7 days"
+      enterIndex={enterIndex}
+      summary={
+        <Box sx={{ textAlign: 'right' }}>
+          <Typography variant="h4">
+            <AnimatedNumber value={total} />
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            ~{average.toFixed(1)} per day
+          </Typography>
+        </Box>
+      }
+    >
+      <Chart type="area" series={[{ name: 'Bookings', data }]} options={options} sx={{ height: 300 }} />
+    </ChartCard>
+  );
+}
+
+function PaymentsChartCard({ rows, enterIndex }: { rows: PaymentsRow[]; enterIndex: number }) {
+  const theme = useTheme();
+  const paidColor = theme.palette.success.main;
+  const pendingColor = theme.palette.warning.main;
+
+  const paidData = rows.map((row) => Number(row.paid) || 0);
+  const pendingData = rows.map((row) => Number(row.pending) || 0);
+  const totalPaid = paidData.reduce((sum, value) => sum + value, 0);
+  const totalPending = pendingData.reduce((sum, value) => sum + value, 0);
+
+  const options = useChart({
+    chart: { animations: CHART_ANIMATION },
+    colors: [paidColor, pendingColor],
+    stroke: { width: 2, colors: ['transparent'] },
+    fill: { type: 'solid', opacity: 1 },
+    plotOptions: { bar: { columnWidth: '52%', borderRadius: 6, borderRadiusApplication: 'end' } },
+    xaxis: { categories: rows.map((row) => dayLabel(row.date)) },
+    yaxis: { tickAmount: 4, labels: { formatter: (value: number) => `৳${Math.round(value).toLocaleString()}` } },
+    tooltip: { shared: true, intersect: false, y: { formatter: (value: number) => formatMoney(value) } },
+  });
+
+  return (
+    <ChartCard
+      icon="solar:wallet-money-bold-duotone"
+      color={paidColor}
+      title="Payments"
+      subtitle="Last 7 days"
+      enterIndex={enterIndex}
+      summary={
+        <Stack direction="row" spacing={3}>
+          <LegendStat color={paidColor} label="Paid" value={<AnimatedNumber value={totalPaid} format={formatMoney} />} />
+          <LegendStat
+            color={pendingColor}
+            label="Pending"
+            value={<AnimatedNumber value={totalPending} format={formatMoney} />}
+          />
+        </Stack>
+      }
+    >
+      <Chart
+        type="bar"
+        series={[
+          { name: 'Paid', data: paidData },
+          { name: 'Pending', data: pendingData },
+        ]}
+        options={options}
+        sx={{ height: 300 }}
+      />
+    </ChartCard>
   );
 }

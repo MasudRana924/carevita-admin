@@ -17,7 +17,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { Scrollbar } from 'src/components/scrollbar';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -124,7 +124,7 @@ function TaskItem({ item, selected, onChange, sx, ...other }: TaskItemProps) {
         />
 
         <IconButton color={menuActions.open ? 'inherit' : 'default'} onClick={menuActions.onOpen}>
-          <LucideIcon icon="eva:more-vertical-fill" />
+          <Iconify icon="solar:menu-dots-vertical-bold" />
         </IconButton>
       </Box>
 
@@ -152,24 +152,24 @@ function TaskItem({ item, selected, onChange, sx, ...other }: TaskItemProps) {
           }}
         >
           <MenuItem onClick={handleMarkComplete}>
-            <LucideIcon icon="solar:check-circle-bold" />
+            <Iconify icon="solar:check-circle-bold" />
             Mark complete
           </MenuItem>
 
           <MenuItem onClick={handleEdit}>
-            <LucideIcon icon="solar:pen-bold" />
+            <Iconify icon="solar:pen-bold" />
             Edit
           </MenuItem>
 
           <MenuItem onClick={handleShare}>
-            <LucideIcon icon="solar:share-bold" />
+            <Iconify icon="solar:share-bold" />
             Share
           </MenuItem>
 
           <Divider sx={{ borderStyle: 'dashed' }} />
 
           <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-            <LucideIcon icon="solar:trash-bin-trash-bold" />
+            <Iconify icon="solar:trash-bin-trash-bold" />
             Delete
           </MenuItem>
         </MenuList>

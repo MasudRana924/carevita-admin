@@ -5,7 +5,7 @@ import Badge from '@mui/material/Badge';
 
 import { RouterLink } from 'src/routes/components';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ export function CartIcon({ totalItems, sx, ...other }: CartIconProps) {
       {...other}
     >
       <Badge showZero badgeContent={totalItems} color="error" max={99}>
-        <LucideIcon icon="solar:cart-3-bold" width={24} />
+        <Iconify icon="solar:cart-3-bold" width={24} />
       </Badge>
     </Box>
   );

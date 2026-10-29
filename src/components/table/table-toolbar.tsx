@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ export function TableToolbar({ filters, actions, onFilters, onResetFilters, resu
           <Button
             color="inherit"
             variant="outlined"
-            startIcon={<LucideIcon icon="ic:round-filter-list" />}
+            startIcon={<Iconify icon="solar:filter-bold" />}
             onClick={onFilters}
           >
             Filters

@@ -14,7 +14,7 @@ import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
 
 import { useRouter } from 'src/routes/hooks';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 import { Label, labelClasses } from 'src/components/label';
 
 // ----------------------------------------------------------------------
@@ -106,7 +106,7 @@ export function FoodTableRow({
 
         <TableCell align="right">
           <IconButton onClick={handleOpenPopover}>
-            <LucideIcon icon="solar:eye-bold" />
+            <Iconify icon="solar:eye-bold" />
           </IconButton>
         </TableCell>
       </TableRow>
@@ -135,12 +135,12 @@ export function FoodTableRow({
           }}
         >
           <MenuItem onClick={handleEdit}>
-            <LucideIcon icon="solar:pen-bold" />
+            <Iconify icon="solar:pen-bold" />
             Edit
           </MenuItem>
 
           <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-            <LucideIcon icon="solar:trash-bin-trash-bold" />
+            <Iconify icon="solar:trash-bin-trash-bold" />
             Delete
           </MenuItem>
         </MenuList>

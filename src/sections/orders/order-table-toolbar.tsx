@@ -8,7 +8,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ export function OrderTableToolbar({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <LucideIcon icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  <Iconify icon="solar:magnifer-linear" sx={{ color: 'text.disabled' }} />
                 </InputAdornment>
               ),
             }}
@@ -122,7 +122,7 @@ export function OrderTableToolbar({
              <Button
                color="error"
                variant="outlined"
-               startIcon={<LucideIcon icon="eva:close-fill" />}
+               startIcon={<Iconify icon="solar:close-circle-bold" />}
                onClick={onClearFilters}
                sx={{
                  borderRadius: 2,
@@ -148,7 +148,7 @@ export function OrderTableToolbar({
           <Button
             color="error"
             variant="outlined"
-            startIcon={<LucideIcon icon="eva:trash-2-fill" />}
+            startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
             sx={{
               borderRadius: 2,
               px: 3,

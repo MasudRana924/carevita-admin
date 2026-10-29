@@ -14,7 +14,7 @@ import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Scrollbar } from 'src/components/scrollbar';
 import { Breadcrumb } from 'src/components/breadcrumb';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 import { TableNoData } from 'src/components/table-no-data';
 
 import { BlogTableRow } from '../blog-table-row';
@@ -75,7 +75,7 @@ export function BlogView({ posts }: Props) {
         <Button
           variant="contained"
           color="inherit"
-          startIcon={<LucideIcon icon="mingcute:add-line" />}
+          startIcon={<Iconify icon="solar:add-circle-bold" />}
           onClick={handleNewPost}
         >
           New post

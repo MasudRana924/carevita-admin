@@ -101,12 +101,12 @@ export function BookingsView() {
       actions={[
         {
           label: 'View',
-          icon: 'eva:eye-fill',
+          icon: 'solar:eye-bold',
           onClick: (row) => navigate(`/bookings/${pickString(row, ['id'])}`),
         },
         ({ confirm }) => ({
           label: 'Cancel',
-          icon: 'eva:close-fill',
+          icon: 'solar:close-circle-bold',
           color: 'error',
           hidden: (row) => String(row.status || '').startsWith('CANCELLED'),
           onClick: (row) =>

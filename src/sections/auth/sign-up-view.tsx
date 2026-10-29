@@ -14,7 +14,7 @@ import { useRouter } from 'src/routes/hooks';
 import { useAuth } from 'src/contexts/AuthContext';
 
 import { ErrorAlert } from 'src/components/error-alert';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -98,7 +98,7 @@ export function SignUpView() {
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                  <LucideIcon icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                  <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
                 </IconButton>
               </InputAdornment>
             ),
@@ -121,7 +121,7 @@ export function SignUpView() {
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
-                  <LucideIcon icon={showConfirmPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
+                  <Iconify icon={showConfirmPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} />
                 </IconButton>
               </InputAdornment>
             ),

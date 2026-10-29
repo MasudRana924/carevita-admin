@@ -4,7 +4,7 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Stack, { StackProps } from '@mui/material/Stack';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ export function CategoriesTableFiltersResult({
           <Button
             color="error"
             onClick={onResetFilters}
-            startIcon={<LucideIcon icon="eva:close-fill" />}
+            startIcon={<Iconify icon="solar:close-circle-bold" />}
           >
             Clear
           </Button>

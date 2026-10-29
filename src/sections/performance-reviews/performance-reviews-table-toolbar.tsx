@@ -6,7 +6,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -103,7 +103,7 @@ export function PerformanceReviewsTableToolbar({
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <LucideIcon icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                <Iconify icon="solar:magnifer-linear" sx={{ color: 'text.disabled' }} />
               </InputAdornment>
             ),
           }}
@@ -145,7 +145,7 @@ export function PerformanceReviewsTableToolbar({
         <Button
           color="error"
           variant="outlined"
-          startIcon={<LucideIcon icon="eva:trash-2-fill" />}
+          startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
           onClick={onDeleteRows}
           sx={{
             borderRadius: 2,
@@ -169,7 +169,7 @@ export function PerformanceReviewsTableToolbar({
         <Button
           color="error"
           variant="outlined"
-          startIcon={<LucideIcon icon="eva:close-fill" />}
+          startIcon={<Iconify icon="solar:close-circle-bold" />}
           onClick={handleClearFilters}
           sx={{
             borderRadius: 2,

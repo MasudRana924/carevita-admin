@@ -91,8 +91,13 @@ export function AdminListPage<T extends Record<string, unknown>>({
   );
 
   return (
-    <DashboardContent maxWidth="xl">
-      <PageHeader title={title} description={description} action={extraToolbar} />
+    <DashboardContent>
+      <PageHeader
+        title={title}
+        description={description}
+        action={extraToolbar}
+        breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }, { title }]}
+      />
       <DataTable
         columns={columns}
         rows={list.items}

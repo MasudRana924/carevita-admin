@@ -14,7 +14,7 @@ import { useRouter } from 'src/routes/hooks';
 import { DashboardContent } from 'src/layouts/dashboard';
 
 import { Breadcrumb } from 'src/components/breadcrumb';
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
 import { _employees } from 'src/_mock';
 
@@ -244,7 +244,7 @@ export function NewLeaveRequestView() {
               variant="contained"
               color="primary"
               onClick={handleSubmit}
-              startIcon={<LucideIcon icon="eva:save-fill" />}
+              startIcon={<Iconify icon="solar:diskette-bold" />}
             >
               Submit Leave Request
             </Button>

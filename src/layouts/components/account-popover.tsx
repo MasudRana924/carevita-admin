@@ -16,7 +16,7 @@ import { useRouter, usePathname } from 'src/routes/hooks';
 
 import { useAuth } from 'src/contexts/AuthContext';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -159,7 +159,7 @@ export function AccountPopover({ data = [], sx, ...other }: AccountPopoverProps)
             size="medium"
             variant="text"
             onClick={handleLogout}
-            startIcon={<LucideIcon icon="eva:log-out-fill" />}
+            startIcon={<Iconify icon="solar:logout-2-bold" />}
             sx={{
               justifyContent: 'flex-start',
               '&:hover': {

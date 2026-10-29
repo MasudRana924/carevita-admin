@@ -6,7 +6,7 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 
-import { LucideIcon } from 'src/components/lucide-icons';
+import { Iconify } from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -78,7 +78,7 @@ export function FoodTableFiltersResult({
           <Button
             color="error"
             onClick={onResetFilters}
-            startIcon={<LucideIcon icon="solar:trash-bin-trash-bold" />}
+            startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
           >
             Clear
           </Button>
