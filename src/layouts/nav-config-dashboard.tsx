@@ -6,7 +6,7 @@ export type NavItem = {
   title: string;
   path: string;
   icon: ReactNode;
-  badge?: 'supportChatUnread' | 'caregiversPendingReview';
+  badge?: 'supportChatUnread' | 'caregiversPendingReview' | 'paymentsReadyToPay';
 };
 
 export type NavGroup = {
@@ -32,6 +32,7 @@ export const navGroups: NavGroup[] = [
         badge: 'caregiversPendingReview',
       },
       { title: 'Hospitals', path: '/hospitals', icon: icon('solar:hospital-bold-duotone') },
+      { title: 'Service Packages', path: '/service-packages', icon: icon('solar:tag-bold-duotone') },
       { title: 'Bookings', path: '/bookings', icon: icon('solar:clipboard-list-bold-duotone') },
     ],
   },
@@ -45,7 +46,12 @@ export const navGroups: NavGroup[] = [
         badge: 'supportChatUnread',
       },
       { title: 'Disputes', path: '/disputes', icon: icon('solar:scale-bold-duotone') },
-      { title: 'Withdrawals', path: '/withdrawals', icon: icon('solar:wallet-money-bold-duotone') },
+      {
+        title: 'Payments',
+        path: '/payments',
+        icon: icon('solar:wallet-money-bold-duotone'),
+        badge: 'paymentsReadyToPay',
+      },
       { title: 'Safety incidents', path: '/safety-incidents', icon: icon('solar:shield-warning-bold-duotone') },
       { title: 'Audit log', path: '/audit-logs', icon: icon('solar:history-bold-duotone') },
     ],

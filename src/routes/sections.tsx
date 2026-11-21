@@ -22,10 +22,13 @@ const CaregiverEkycDetailView = lazy(() =>
 const HospitalsView = lazy(() => import('src/sections/admin/hospitals').then((m) => ({ default: m.HospitalsView })));
 const NewHospitalView = lazy(() => import('src/sections/admin/hospitals').then((m) => ({ default: m.NewHospitalView })));
 const HospitalEditView = lazy(() => import('src/sections/admin/hospitals').then((m) => ({ default: m.HospitalEditView })));
+const ServicePackagesView = lazy(() =>
+  import('src/sections/admin/service-packages').then((m) => ({ default: m.ServicePackagesView }))
+);
 const BookingsView = lazy(() => import('src/sections/admin/bookings').then((m) => ({ default: m.BookingsView })));
 const BookingDetailView = lazy(() => import('src/sections/admin/bookings').then((m) => ({ default: m.BookingDetailView })));
 const DisputesView = lazy(() => import('src/sections/admin/disputes').then((m) => ({ default: m.DisputesView })));
-const WithdrawalsView = lazy(() => import('src/sections/admin/withdrawals').then((m) => ({ default: m.WithdrawalsView })));
+const PaymentsView = lazy(() => import('src/sections/admin/payments').then((m) => ({ default: m.PaymentsView })));
 const SafetyIncidentsView = lazy(() =>
   import('src/sections/admin/safety-incidents').then((m) => ({ default: m.SafetyIncidentsView }))
 );
@@ -108,10 +111,12 @@ export const routesSection: RouteObject[] = [
       { path: 'hospitals', element: <HospitalsView /> },
       { path: 'hospitals/new', element: <NewHospitalView /> },
       { path: 'hospitals/:id', element: <HospitalEditView /> },
+      { path: 'service-packages', element: <ServicePackagesView /> },
       { path: 'bookings', element: <BookingsView /> },
       { path: 'bookings/:id', element: <BookingDetailView /> },
       { path: 'disputes', element: <DisputesView /> },
-      { path: 'withdrawals', element: <WithdrawalsView /> },
+      { path: 'payments', element: <PaymentsView /> },
+      { path: 'withdrawals', element: <Navigate to="/payments" replace /> },
       { path: 'safety-incidents', element: <SafetyIncidentsView /> },
       { path: 'privacy-policies', element: <PrivacyPoliciesView /> },
       { path: 'audit-logs', element: <AuditLogsView /> },

@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
@@ -197,6 +198,30 @@ export function BookingDetailView() {
   const customer = pickString(booking, ['customer_name', 'user_name', 'user_id']);
   const caregiver = pickString(booking, ['caregiver_name', 'provider_name']);
   const bookingDate = pickString(booking, ['booking_date', 'scheduled_at'], '');
+  const serviceType = pickString(booking, ['service_type'], '');
+  const packageCode = pickString(booking, ['package_code'], '');
+  const outdoorPurpose = pickString(booking, ['outdoor_purpose'], '');
+  const pickupAddress = pickString(booking, ['pickup_address'], '');
+  const destinationName = pickString(booking, ['destination_name'], '');
+  const destinationAddress = pickString(booking, ['destination_address'], '');
+  const hospitalId = pickString(booking, ['hospital_id'], '');
+  const hospitalName = pickString(booking, ['hospital_name', 'hospital'], '');
+  const durationHours = pickNumber(booking, ['duration_hours']);
+  const totalAmount = pickNumber(booking, ['total_amount']);
+  const advanceAmount = pickNumber(booking, ['advance_amount']);
+  const remainingDue = pickNumber(booking, ['remaining_amount']);
+  const paymentPolicy = pickString(booking, ['payment_policy'], '');
+  const isFullPrepay =
+    paymentPolicy === 'FULL_PREPAY' ||
+    (remainingDue != null && remainingDue === 0 && (advanceAmount != null || totalAmount != null));
+  const serviceSnapshot = booking.service_snapshot;
+  const hasOutdoorFields =
+    outdoorPurpose !== '—' ||
+    pickupAddress !== '—' ||
+    destinationName !== '—' ||
+    destinationAddress !== '—' ||
+    hospitalId !== '—' ||
+    hospitalName !== '—';
 
   return (
     <DashboardContent>
@@ -210,6 +235,12 @@ export function BookingDetailView() {
           badges={
             <>
               <StatusBadge value={bookingStatus} label={isSearching ? 'Searching caregiver' : undefined} />
+              {serviceType && serviceType !== '—' && (
+                <StatusBadge
+                  value={serviceType}
+                  label={serviceType === 'HOME_CARE' ? 'Home Care' : serviceType === 'HOSPITAL_ASSISTANCE' ? 'Outdoor' : serviceType}
+                />
+              )}
               {booking.payout_frozen != null && (
                 <StatusBadge
                   value={!booking.payout_frozen}
@@ -245,9 +276,37 @@ export function BookingDetailView() {
         />
 
         <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
-          <StatTile icon="solar:wallet-money-bold-duotone" color="primary" label="Paid" value={money(originalAmount)} />
+          <StatTile
+            icon="solar:bill-list-bold-duotone"
+            color="primary"
+            label="Total"
+            value={money(totalAmount ?? originalAmount)}
+          />
+          <StatTile
+            icon="solar:wallet-money-bold-duotone"
+            color="info"
+            label="Advance / prepaid"
+            value={money(advanceAmount ?? originalAmount)}
+          />
+          <StatTile
+            icon="solar:safe-square-bold-duotone"
+            color={remainingDue != null && remainingDue > 0 ? 'warning' : 'success'}
+            label="Remaining due"
+            value={money(remainingDue ?? 0)}
+          />
+        </Box>
+
+        {isFullPrepay && (
+          <Alert severity="success">
+            Fully prepaid{paymentPolicy && paymentPolicy !== '—' ? ` (${paymentPolicy})` : ''} — no remaining
+            balance to collect for this booking.
+          </Alert>
+        )}
+
+        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
+          <StatTile icon="solar:wallet-money-bold-duotone" color="primary" label="Refundable paid" value={money(originalAmount)} />
           <StatTile icon="solar:undo-left-round-bold" color="warning" label="Refunded" value={money(refundedAmount)} />
-          <StatTile icon="solar:safe-square-bold-duotone" color="success" label="Remaining" value={money(remaining)} />
+          <StatTile icon="solar:safe-square-bold-duotone" color="success" label="Refund remaining" value={money(remaining)} />
         </Box>
 
         <Grid container spacing={3}>
@@ -304,6 +363,91 @@ export function BookingDetailView() {
                   </Stack>
                 )}
               </SectionCard>
+
+              <SectionCard
+                icon="solar:tag-bold-duotone"
+                color="info"
+                title="Service"
+                subtitle="Package, outdoor purpose, and destination"
+              >
+                <Stack spacing={1.75}>
+                  <DetailRow
+                    label="Service type"
+                    value={
+                      serviceType && serviceType !== '—'
+                        ? serviceType === 'HOME_CARE'
+                          ? 'Home Care'
+                          : serviceType === 'HOSPITAL_ASSISTANCE'
+                            ? 'Outdoor Assistance'
+                            : serviceType.replace(/_/g, ' ')
+                        : '—'
+                    }
+                  />
+                  <DetailRow label="Package" value={packageCode} />
+                  <DetailRow
+                    label="Duration"
+                    value={durationHours != null ? `${durationHours} hours` : '—'}
+                  />
+                  {(outdoorPurpose !== '—' || serviceType === 'HOSPITAL_ASSISTANCE') && (
+                    <DetailRow
+                      label="Outdoor purpose"
+                      value={outdoorPurpose !== '—' ? outdoorPurpose.replace(/_/g, ' ') : '—'}
+                    />
+                  )}
+                  {hasOutdoorFields && (
+                    <>
+                      <DetailRow label="Pickup" value={pickupAddress} />
+                      <DetailRow label="Destination" value={destinationName} />
+                      <DetailRow label="Destination address" value={destinationAddress} />
+                      {(hospitalName !== '—' || hospitalId !== '—') && (
+                        <DetailRow
+                          label="Hospital"
+                          value={
+                            hospitalName !== '—'
+                              ? hospitalId !== '—'
+                                ? `${hospitalName} (${hospitalId})`
+                                : hospitalName
+                              : hospitalId
+                          }
+                        />
+                      )}
+                    </>
+                  )}
+                  <DetailRow label="Payment policy" value={paymentPolicy !== '—' ? paymentPolicy : isFullPrepay ? 'FULL_PREPAY' : '—'} />
+                  <DetailRow label="Total" value={money(totalAmount)} />
+                  <DetailRow label="Advance" value={money(advanceAmount)} />
+                  <DetailRow label="Remaining due" value={money(remainingDue ?? 0)} />
+                </Stack>
+              </SectionCard>
+
+              {serviceSnapshot != null && serviceSnapshot !== '' && (
+                <SectionCard
+                  icon="solar:document-text-bold-duotone"
+                  color="secondary"
+                  title="Service snapshot"
+                  subtitle="Read-only pricing snapshot at booking time"
+                >
+                  <Box
+                    component="pre"
+                    sx={{
+                      m: 0,
+                      p: 2,
+                      maxHeight: 320,
+                      overflow: 'auto',
+                      borderRadius: 1.5,
+                      bgcolor: 'background.neutral',
+                      typography: 'caption',
+                      fontFamily: 'monospace',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {typeof serviceSnapshot === 'string'
+                      ? serviceSnapshot
+                      : JSON.stringify(serviceSnapshot, null, 2)}
+                  </Box>
+                </SectionCard>
+              )}
 
               <SectionCard
                 icon="solar:history-bold-duotone"

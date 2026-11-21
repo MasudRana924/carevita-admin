@@ -4,7 +4,7 @@ import { EmptyState } from 'src/components/page-states';
 
 export { BookingsView } from './bookings';
 export { DisputesView } from './disputes';
-export { WithdrawalsView } from './withdrawals';
+export { PaymentsView } from './payments';
 
 function Unavailable({ title }: { title: string }) {
   return (
@@ -26,9 +26,6 @@ export function DoctorsView() {
 }
 export function DocumentsView() {
   return <Unavailable title="Documents" />;
-}
-export function PaymentsView() {
-  return <Unavailable title="Payments" />;
 }
 export function MedicinesView() {
   return <Unavailable title="Medicines" />;

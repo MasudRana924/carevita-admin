@@ -16,6 +16,7 @@ import { Logo } from 'src/components/logo';
 import { Scrollbar } from 'src/components/scrollbar';
 import { useUnreadSummary } from 'src/sections/admin/support-chat/use-unread-summary';
 import { usePendingReviewCount } from 'src/sections/admin/caregivers/use-pending-review-count';
+import { useReadyToPaySummary } from 'src/sections/admin/payments/use-ready-to-pay-summary';
 
 import type { NavGroup, NavItem } from '../nav-config-dashboard';
 
@@ -100,10 +101,12 @@ function NavContent({
   const pathname = usePathname();
   const { data: unreadSummary } = useUnreadSummary();
   const { count: pendingReviewCount } = usePendingReviewCount();
+  const { data: payoutSummary } = useReadyToPaySummary();
 
   const badges: Record<NonNullable<NavItem['badge']>, number> = {
     supportChatUnread: unreadSummary?.unread_conversations ?? 0,
     caregiversPendingReview: pendingReviewCount,
+    paymentsReadyToPay: Number(payoutSummary?.ready_count) || 0,
   };
 
   return (

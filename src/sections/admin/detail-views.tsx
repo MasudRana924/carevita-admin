@@ -20,9 +20,6 @@ export function ProviderDetailView() {
 export function DoctorDetailView() {
   return <Unavailable title="Doctor details" />;
 }
-export function PaymentDetailView() {
-  return <Unavailable title="Payment details" />;
-}
 export function HospitalDetailView() {
   return <Unavailable title="Hospital details" />;
 }
@@ -37,9 +34,6 @@ export function OrderDetailView() {
 }
 export function DisputeDetailView() {
   return <Unavailable title="Dispute details" />;
-}
-export function WithdrawalDetailView() {
-  return <Unavailable title="Withdrawal details" />;
 }
 export function SupportDetailView() {
   return <Unavailable title="Support ticket" />;

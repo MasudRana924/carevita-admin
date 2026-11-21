@@ -375,12 +375,61 @@ export type BookingStatus =
   | 'CANCELLED_BY_PROVIDER'
   | 'CANCELLED_BY_ADMIN';
 
+export type ServiceType = 'HOME_CARE' | 'HOSPITAL_ASSISTANCE' | string;
+export type OutdoorPurpose = 'HOSPITAL' | 'LAB_DIAGNOSTIC' | 'PHARMACY' | 'DOCTOR_CHAMBER' | string;
+
+export interface ServicePackage {
+  code: string;
+  service_type: ServiceType;
+  duration_hours: number;
+  base_price: number;
+  label: string;
+  description?: string | null;
+  is_active: boolean;
+  sort_order: number;
+  [key: string]: unknown;
+}
+
+export interface ServicePackageUpsertPayload {
+  code: string;
+  service_type: ServiceType;
+  duration_hours: number;
+  base_price: number;
+  label: string;
+  description?: string;
+  is_active?: boolean;
+  sort_order?: number;
+}
+
+export interface ServicePackageUpdatePayload {
+  base_price?: number;
+  label?: string;
+  description?: string;
+  is_active?: boolean;
+  sort_order?: number;
+  duration_hours?: number;
+}
+
 export interface Booking {
   id: string;
   status: BookingStatus | string;
   offer_expires_at?: string | null;
   accept_timeout_minutes?: number | null;
   payout_frozen?: boolean;
+  service_type?: ServiceType | null;
+  package_code?: string | null;
+  outdoor_purpose?: OutdoorPurpose | null;
+  pickup_address?: string | null;
+  destination_name?: string | null;
+  destination_address?: string | null;
+  hospital_id?: string | null;
+  hospital_name?: string | null;
+  duration_hours?: number | null;
+  total_amount?: number | null;
+  advance_amount?: number | null;
+  remaining_amount?: number | null;
+  payment_policy?: string | null;
+  service_snapshot?: unknown;
   [key: string]: unknown;
 }
 
@@ -388,6 +437,9 @@ export interface BookingsQueryParams {
   status?: string;
   date_from?: string;
   date_to?: string;
+  service_type?: string;
+  outdoor_purpose?: string;
+  package_code?: string;
   page?: number;
   limit?: number;
 }
@@ -423,24 +475,90 @@ export interface DisputesResponse {
   meta: PaginationMeta;
 }
 
-export interface Withdrawal {
+// Payment & caregiver payout types (all money values are BDT numbers)
+export type PayoutStatus = 'AWAITING_SERVICE_END' | 'READY_FOR_PAYOUT' | 'PAID_TO_CAREGIVER' | 'NOT_PAYABLE';
+
+export type PaymentStatus = 'CREATED' | 'COMPLETED' | 'PARTIAL_REFUND' | 'REFUNDED' | 'FAILED' | string;
+
+export interface AdminPayment {
   id: string;
-  amount?: number | string;
-  caregiver_name?: string;
-  bkash_number?: string;
-  status?: string;
+  booking_id: string;
+  booking_number: string | null;
+  booking_status: string | null;
+  payout_frozen: boolean;
+  user_id: string | null;
+  user_name: string | null;
+  user_phone: string | null;
+  caregiver_user_id: string | null;
+  caregiver_name: string | null;
+  caregiver_phone: string | null;
+  amount: number;
+  refunded_amount: number;
+  currency: string;
+  payment_method: string | null;
+  status: PaymentStatus;
+  trx_id: string | null;
+  bkash_payment_id: string | null;
+  merchant_invoice: string | null;
+  paid_at: string | null;
+  payout_status: PayoutStatus | null;
+  platform_fee: number | null;
+  caregiver_amount: number | null;
+  payout_ready_at: string | null;
+  paid_out_at: string | null;
+  paid_out_by: string | null;
+  paid_out_by_name: string | null;
+  payout_trx_id: string | null;
+  payout_note: string | null;
+  created_at: string;
+  updated_at: string;
+  /** Only on the transfer response */
+  total_amount?: number;
+}
+
+export interface PaymentRefund {
+  id: string;
+  refund_amount: number | string;
+  status: string;
+  refund_trx_id: string | null;
+  reason: string | null;
+  created_at: string;
+}
+
+export interface AdminPaymentDetail extends AdminPayment {
+  refunds?: PaymentRefund[];
   [key: string]: unknown;
 }
 
-export interface WithdrawalsQueryParams {
-  status?: string;
+export interface PaymentsSummary {
+  ready_count: number;
+  ready_amount: number;
+  paid_count: number;
+  paid_amount: number;
+  platform_fee_earned: number;
+}
+
+export interface PaymentsQueryParams {
+  payout_status?: PayoutStatus;
+  /** Omit for successful payments only; `ALL` includes CREATED / FAILED attempts */
+  status?: PaymentStatus | 'ALL';
+  search?: string;
+  date_from?: string;
+  date_to?: string;
+  caregiver_user_id?: string;
   page?: number;
   limit?: number;
 }
 
-export interface WithdrawalsResponse {
-  data: Withdrawal[];
+export interface PaymentsResponse {
+  data: AdminPayment[];
   meta: PaginationMeta;
+  summary: PaymentsSummary | null;
+}
+
+export interface PaymentTransferPayload {
+  trx_id: string;
+  note?: string;
 }
 
 export interface BkashRefundPayload {

@@ -40,17 +40,18 @@ export const hospitalsApi = {
     apiSend('put', `/admin/hospitals/${id}/status`, { is_active }),
 };
 
+export const servicePackagesApi = {
+  list: (params?: Record<string, string | number | boolean | undefined>) =>
+    apiList('/admin/service-packages', params),
+  create: (body: Record<string, unknown>) => apiSend('post', '/admin/service-packages', body),
+  update: (code: string, body: Record<string, unknown>) =>
+    apiSend('put', `/admin/service-packages/${encodeURIComponent(code)}`, body),
+  catalog: () => apiGet('/services/catalog'),
+};
+
 export const disputesApi = {
   list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/disputes', params),
   update: (id: string, body: Record<string, unknown>) => apiSend('patch', `/admin/disputes/${id}`, body),
-};
-
-export const withdrawalsApi = {
-  list: (params?: Record<string, string | number | boolean | undefined>) => apiList('/admin/withdrawals', params),
-  approve: (id: string, body?: Record<string, unknown>) =>
-    apiSend('post', `/admin/withdrawals/${id}/approve`, body || {}),
-  reject: (id: string, body?: Record<string, unknown>) =>
-    apiSend('post', `/admin/withdrawals/${id}/reject`, body || {}),
 };
 
 export const auditLogsApi = {

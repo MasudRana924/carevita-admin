@@ -3,9 +3,11 @@ import type { ReactNode } from 'react';
 import { keyframes } from '@emotion/react';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Skeleton from '@mui/material/Skeleton';
@@ -21,6 +23,9 @@ import { getErrorMessage } from 'src/lib/utils';
 import { EmptyState, ErrorState } from 'src/components/page-states';
 import { PageHeader } from 'src/components/page-header';
 import { Chart, useChart } from 'src/components/chart';
+
+import { formatBDT } from './payments/payment-utils';
+import { useReadyToPaySummary } from './payments/use-ready-to-pay-summary';
 
 const KPI_LABELS: Record<string, string> = {
   total_bookings: 'Total Bookings',
@@ -192,6 +197,8 @@ export default function DashboardView() {
     <DashboardContent>
       <PageHeader title="Dashboard" description="Nirapod healthcare administration overview" />
 
+      <ReadyToPayCard />
+
       {isDashboardLoading ? (
         <DashboardKpiSkeleton />
       ) : dashboardQuery.error ? (
@@ -252,6 +259,55 @@ export default function DashboardView() {
 }
 
 // ----------------------------------------------------------------------
+
+function ReadyToPayCard() {
+  const navigate = useNavigate();
+  const { data: summary, isLoading, error } = useReadyToPaySummary();
+
+  if (error) return null;
+
+  const readyCount = Number(summary?.ready_count) || 0;
+  const color = readyCount > 0 ? '#F59E0B' : '#16A34A';
+
+  return (
+    <Card sx={[CARD_SX, { mb: 3, borderColor: readyCount > 0 ? `${color}66` : 'divider' }, enterSx(0)]}>
+      <CardActionArea onClick={() => navigate('/payments')} sx={{ p: 2.5 }}>
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 1.5,
+              color,
+              bgcolor: `${color}1A`,
+            }}
+          >
+            <Iconify icon="solar:hand-money-bold-duotone" width={26} />
+          </Box>
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Ready to pay caregivers
+            </Typography>
+            {isLoading ? (
+              <Skeleton variant="text" width={220} height={36} />
+            ) : (
+              <Typography variant="h5">
+                {readyCount} booking{readyCount === 1 ? '' : 's'} · {formatBDT(summary?.ready_amount ?? 0)}
+              </Typography>
+            )}
+          </Box>
+          <Typography variant="button" sx={{ color: 'primary.main', flexShrink: 0 }}>
+            Open payments
+          </Typography>
+        </Stack>
+      </CardActionArea>
+    </Card>
+  );
+}
 
 function ChartCard({
   icon,

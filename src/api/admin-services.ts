@@ -28,13 +28,19 @@ import type {
   BookingsQueryParams,
   BookingsResponse,
   BookingCancelResponse,
+  ServicePackage,
+  ServicePackageUpsertPayload,
+  ServicePackageUpdatePayload,
   Dispute,
   DisputesQueryParams,
   DisputesResponse,
   DisputeStatus,
-  Withdrawal,
-  WithdrawalsQueryParams,
-  WithdrawalsResponse,
+  AdminPayment,
+  AdminPaymentDetail,
+  PaymentsQueryParams,
+  PaymentsResponse,
+  PaymentsSummary,
+  PaymentTransferPayload,
   BkashRefundPayload,
   BkashRefundStatusPayload,
   AuditLog,
@@ -248,6 +254,45 @@ export const adminHospitalsService = {
   },
 };
 
+export const adminServicePackagesService = {
+  getPackages: async (params?: {
+    service_type?: string;
+    active_only?: boolean;
+  }): Promise<ServicePackage[]> => {
+    const response = await apiClient.get<AdminApiResponse<ServicePackage[] | { packages: ServicePackage[] }>>(
+      `${ADMIN_BASE}/service-packages`,
+      { params: { active_only: false, ...params } }
+    );
+    const data = unwrapData<ServicePackage[] | { packages: ServicePackage[] }>(response.data);
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === 'object' && Array.isArray((data as { packages?: ServicePackage[] }).packages)) {
+      return (data as { packages: ServicePackage[] }).packages;
+    }
+    return asList<ServicePackage>(data);
+  },
+
+  createPackage: async (body: ServicePackageUpsertPayload): Promise<ServicePackage> => {
+    const response = await apiClient.post<AdminApiResponse<ServicePackage>>(
+      `${ADMIN_BASE}/service-packages`,
+      body
+    );
+    return unwrapData<ServicePackage>(response.data);
+  },
+
+  updatePackage: async (code: string, body: ServicePackageUpdatePayload): Promise<ServicePackage> => {
+    const response = await apiClient.put<AdminApiResponse<ServicePackage>>(
+      `${ADMIN_BASE}/service-packages/${encodeURIComponent(code)}`,
+      body
+    );
+    return unwrapData<ServicePackage>(response.data);
+  },
+
+  getCatalog: async (): Promise<unknown> => {
+    const response = await apiClient.get<AdminApiResponse<unknown>>('/services/catalog');
+    return unwrapData<unknown>(response.data);
+  },
+};
+
 export const adminBookingsService = {
   getBookings: async (params?: BookingsQueryParams): Promise<BookingsResponse> => {
     const response = await apiClient.get<AdminApiResponse<Booking[]>>(`${ADMIN_BASE}/bookings`, { params });
@@ -280,26 +325,33 @@ export const adminDisputesService = {
   },
 };
 
-export const adminWithdrawalsService = {
-  getWithdrawals: async (params?: WithdrawalsQueryParams): Promise<WithdrawalsResponse> => {
-    const response = await apiClient.get<AdminApiResponse<Withdrawal[]>>(`${ADMIN_BASE}/withdrawals`, { params });
-    return listResponse<Withdrawal>(response.data);
+export const adminPaymentsService = {
+  getPayments: async (params?: PaymentsQueryParams): Promise<PaymentsResponse> => {
+    const response = await apiClient.get<AdminApiResponse<AdminPayment[]>>(`${ADMIN_BASE}/payments`, { params });
+    const envelope = unwrapEnvelope<AdminPayment[] | Record<string, unknown>>(response.data);
+    const summary = envelope.meta?.summary;
+    return {
+      data: asList<AdminPayment>(envelope.data),
+      meta: getPagination(envelope.meta),
+      summary: summary && typeof summary === 'object' ? (summary as PaymentsSummary) : null,
+    };
   },
 
-  approveWithdrawal: async (id: string, note?: string): Promise<Withdrawal> => {
-    const response = await apiClient.post<AdminApiResponse<Withdrawal>>(
-      `${ADMIN_BASE}/withdrawals/${id}/approve`,
-      note ? { note } : {}
-    );
-    return unwrapData<Withdrawal>(response.data);
+  getPayment: async (id: string): Promise<AdminPaymentDetail> => {
+    const response = await apiClient.get<AdminApiResponse<AdminPaymentDetail>>(`${ADMIN_BASE}/payments/${id}`);
+    return unwrapData<AdminPaymentDetail>(response.data);
   },
 
-  rejectWithdrawal: async (id: string, note?: string): Promise<Withdrawal> => {
-    const response = await apiClient.post<AdminApiResponse<Withdrawal>>(
-      `${ADMIN_BASE}/withdrawals/${id}/reject`,
-      note ? { note } : {}
-    );
-    return unwrapData<Withdrawal>(response.data);
+  transfer: async (
+    id: string,
+    body: PaymentTransferPayload
+  ): Promise<{ data: AdminPayment; message?: string }> => {
+    const response = await apiClient.post<AdminApiResponse<AdminPayment>>(`${ADMIN_BASE}/payments/${id}/transfer`, {
+      trx_id: body.trx_id,
+      ...(body.note ? { note: body.note } : {}),
+    });
+    const envelope = unwrapEnvelope<AdminPayment>(response.data);
+    return { data: envelope.data, message: envelope.message };
   },
 };
 

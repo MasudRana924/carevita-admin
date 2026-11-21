@@ -45,6 +45,25 @@ export function BookingsView() {
                 : value.replace(/_/g, ' '),
           })),
         },
+        {
+          id: 'service_type',
+          label: 'Service',
+          options: [
+            { value: 'HOME_CARE', label: 'Home Care' },
+            { value: 'HOSPITAL_ASSISTANCE', label: 'Outdoor Assistance' },
+          ],
+        },
+        {
+          id: 'outdoor_purpose',
+          label: 'Outdoor purpose',
+          options: [
+            { value: 'HOSPITAL', label: 'Hospital' },
+            { value: 'LAB_DIAGNOSTIC', label: 'Lab / Diagnostic' },
+            { value: 'PHARMACY', label: 'Pharmacy' },
+            { value: 'DOCTOR_CHAMBER', label: 'Doctor chamber' },
+          ],
+        },
+        { id: 'package_code', label: 'Package code', type: 'text' },
         { id: 'date_from', label: 'From', type: 'date' },
         { id: 'date_to', label: 'To', type: 'date' },
       ]}
@@ -59,6 +78,35 @@ export function BookingsView() {
           id: 'caregiver',
           label: 'Caregiver',
           render: (row) => pickString(row, ['caregiver_name', 'provider_name']),
+        },
+        {
+          id: 'service',
+          label: 'Service',
+          render: (row) => {
+            const serviceType = pickString(row, ['service_type'], '');
+            const packageCode = pickString(row, ['package_code'], '');
+            const outdoorPurpose = pickString(row, ['outdoor_purpose'], '');
+            if ((!serviceType || serviceType === '—') && (!packageCode || packageCode === '—')) return '—';
+            return (
+              <Stack spacing={0.25} sx={{ minWidth: 120 }}>
+                <span>
+                  {serviceType === 'HOME_CARE'
+                    ? 'Home Care'
+                    : serviceType === 'HOSPITAL_ASSISTANCE'
+                      ? 'Outdoor'
+                      : serviceType !== '—'
+                        ? serviceType.replace(/_/g, ' ')
+                        : '—'}
+                </span>
+                {packageCode && packageCode !== '—' && (
+                  <span style={{ fontFamily: 'monospace', fontSize: 12 }}>{packageCode}</span>
+                )}
+                {outdoorPurpose && outdoorPurpose !== '—' && (
+                  <span style={{ fontSize: 12, opacity: 0.7 }}>{outdoorPurpose.replace(/_/g, ' ')}</span>
+                )}
+              </Stack>
+            );
+          },
         },
         {
           id: 'status',
